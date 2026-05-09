@@ -282,11 +282,10 @@
                 <ol>
                     <li>The numbers at a glance</li>
                     <li>What the customers actually did (real order data)</li>
-                    <li>The full P&amp;L math, line by line</li>
+                    <li>The full CM math, line by line</li>
                     <li>What the math depends on</li>
                     <li>Annualized projection if nothing changes</li>
-                    <li>Questions worth sitting with</li>
-                    <li>A few directions you could explore</li>
+                    <li>Recommendation: pause the funnel</li>
                 </ol>
             </div>
 
@@ -312,7 +311,7 @@
                 <div class="metric-box">
                     <h4>Revenue from these customers</h4>
                     <div class="metric-value">$4,435</div>
-                    <div class="metric-sub">FG orders + downstream</div>
+                    <div class="metric-sub">FG orders + downstream (60d)</div>
                 </div>
                 <div class="metric-box">
                     <h4>60-day contribution margin</h4>
@@ -322,7 +321,11 @@
             </div>
 
             <div class="note note-blue">
-                <strong>Reading the headline:</strong> The funnel acquired 547 customers in 60 days. The revenue those customers produced (across every order they placed) was $4,435. The total cost to acquire and fulfill them was $11,264. Net loss for the 60-day period: $6,829.
+                <strong>Reading the headline:</strong> The funnel acquired 547 customers in 60 days. The revenue those customers produced (across every order they placed in that window) was $4,435. The total cost to acquire and fulfill them was $11,264. CM loss for the 60-day period: −$6,829, or −$12.48 per customer acquired.
+            </div>
+
+            <div class="note">
+                <strong>The bar this report uses:</strong> first-order or first-month profitability. For a bootstrapped business, "we'll make it back at month 4-6" isn't workable — cash has to come back fast or the funnel can't fund itself. Every number in this report is judged against that bar.
             </div>
         </div>
     </div>
@@ -349,169 +352,169 @@
 
             <p class="source-line">Source: every paid order from the 547 customers, pulled from Shopify Admin API, customer-by-customer, order-by-order.</p>
 
-            <h3 style="margin-top:1.5rem;">The 9 customers who bought something non-free</h3>
-            <p>These are the 9 customers who placed any order containing a non-free product. Their full order histories are below — verbatim from the order data.</p>
+            <h3 style="margin-top:1.5rem;">The 9 customers who placed an order containing a non-free product</h3>
+            <p>Below is each of the 9 customers' complete order history in the 60-day window. Every order shows what they actually <strong>paid</strong> at checkout and what the listed <strong>product price</strong> was — so the discounting is visible. Most "paid" repeats were heavily discounted to near-free.</p>
 
             <div class="cust-card">
-                <div class="cust-head">Customer 1 · Total post-FG spend: $7.49</div>
+                <div class="cust-head">Customer 1 · Bought 1 paid product (heavily discounted)</div>
                 <div class="cust-orders">
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 28 — /pages/free-gummies</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Apr 28 — /pages/free-gummies</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">$0 product + $6.95 ship</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>May 5 — / (home)</span><span>$7.49</span></div>
-                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                        <div class="cust-order-line"><span>May 5 — / (home)</span><span>Paid $7.49</span></div>
+                        <div class="cust-order-item">CBD Gummies 100mg Bag <span class="paid-tag">$9.99 list, −$7.95 discount</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="cust-card">
-                <div class="cust-head">Customer 2 · Total post-FG spend: $7.95</div>
+                <div class="cust-head">Customer 2 · Bought 1 paid product (almost free)</div>
                 <div class="cust-orders">
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 24 — /pages/free-gummies</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Apr 24 — /pages/free-gummies</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">$0 product + $6.95 ship</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 24 — / (home, ~10hr later)</span><span>$7.95</span></div>
-                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                        <div class="cust-order-line"><span>Apr 24 — / (home, ~10hr later)</span><span>Paid $7.95</span></div>
+                        <div class="cust-order-item">CBD Gummies 100mg Bag <span class="paid-tag">$9.99 list, −$9.99 discount → $0 product + $7.95 ship</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="cust-card">
-                <div class="cust-head">Customer 3 · Total post-FG spend: $21.90</div>
+                <div class="cust-head">Customer 3 · Bought 2 paid products at full price</div>
                 <div class="cust-orders">
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 16 — /pages/free-gummies</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Apr 16 — /pages/free-gummies</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">$0 product + $6.95 ship</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 24 — /collections/buy-cbd</span><span>$21.90</span></div>
-                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
-                        <div class="cust-order-item">1× Dark Chocolate CBD Bar 300mg <span class="paid-tag">$18.75</span></div>
+                        <div class="cust-order-line"><span>Apr 24 — /collections/buy-cbd</span><span>Paid $21.90</span></div>
+                        <div class="cust-order-item">CBD Gummies 100mg Bag <span class="paid-tag">$9.99 list</span></div>
+                        <div class="cust-order-item">Dark Chocolate CBD Bar 300mg <span class="paid-tag">$18.75 list, −$14.79 discount</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="cust-card">
-                <div class="cust-head">Customer 4 · Total post-FG spend: $20.87</div>
+                <div class="cust-head">Customer 4 · Bought 4 100mg bags — all heavily discounted</div>
                 <div class="cust-orders">
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Mar 19 — /pages/free-gummies</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Mar 19 — /pages/free-gummies</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">free</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Mar 31 — /pages/free-gummies (again)</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Mar 31 — /pages/free-gummies (again)</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">free</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 3 — /pages/free-gummies (3rd time)</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Apr 3 — /pages/free-gummies (3rd time)</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">free</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 3 — / (home, hours later)</span><span>$7.95</span></div>
-                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                        <div class="cust-order-line"><span>Apr 3 — / (home, hours later)</span><span>Paid $7.95</span></div>
+                        <div class="cust-order-item">CBD Gummies 100mg Bag <span class="paid-tag">$9.99 list, −$9.99 discount → free product + $7.95 ship</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 11 — / (home)</span><span>$12.92</span></div>
-                        <div class="cust-order-item">3× CBD Gummies 100mg Bag <span class="paid-tag">$9.99 ea</span></div>
+                        <div class="cust-order-line"><span>Apr 11 — / (home)</span><span>Paid $12.92</span></div>
+                        <div class="cust-order-item">3× CBD Gummies 100mg Bag <span class="paid-tag">$29.97 list, −$25 discount → ~$1.65/bag</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="cust-card">
-                <div class="cust-head">Customer 5 · Total post-FG spend: $13.14</div>
+                <div class="cust-head">Customer 5 · Bought 2 100mg bags (discounted)</div>
                 <div class="cust-orders">
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 10 — /pages/free-gummies</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Apr 10 — /pages/free-gummies</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">free</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 10 — / (home, ~30 min later)</span><span>$13.14</span></div>
-                        <div class="cust-order-item">2× CBD Gummies 100mg Bag <span class="paid-tag">$9.99 ea</span></div>
+                        <div class="cust-order-line"><span>Apr 10 — / (home, ~30 min later)</span><span>Paid $13.14</span></div>
+                        <div class="cust-order-item">2× CBD Gummies 100mg Bag <span class="paid-tag">$19.98 list, −$14.79 discount → ~$2.60/bag</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="cust-card">
-                <div class="cust-head">Customer 6 · Total post-FG spend: $13.14</div>
+                <div class="cust-head">Customer 6 · Bought 2 100mg bags (discounted)</div>
                 <div class="cust-orders">
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>May 1 — /pages/free-gummies</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>May 1 — /pages/free-gummies</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">free</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>May 1 — / (home, 18 min later)</span><span>$13.14</span></div>
-                        <div class="cust-order-item">2× CBD Gummies 100mg Bag <span class="paid-tag">$9.99 ea</span></div>
+                        <div class="cust-order-line"><span>May 1 — / (home, 18 min later)</span><span>Paid $13.14</span></div>
+                        <div class="cust-order-item">2× CBD Gummies 100mg Bag <span class="paid-tag">$19.98 list, −$14.79 discount → ~$2.60/bag</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="cust-card">
-                <div class="cust-head">Customer 7 · Total post-FG spend: $7.95</div>
+                <div class="cust-head">Customer 7 · Bought 1 100mg bag (discounted to free)</div>
                 <div class="cust-orders">
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Mar 14 — /pages/free-gummies</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Mar 14 — /pages/free-gummies</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">free</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 12 — /products/free-cbd-gummies (again)</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Apr 12 — /products/free-cbd-gummies</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg (again) <span class="free-tag">free</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 20 — /products/free-cbd-gummies</span><span>$7.95</span></div>
-                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                        <div class="cust-order-line"><span>Apr 20 — /products/free-cbd-gummies</span><span>Paid $7.95</span></div>
+                        <div class="cust-order-item">CBD Gummies 100mg Bag <span class="paid-tag">$9.99 list, −$9.99 discount → free product + $7.95 ship</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="cust-card">
-                <div class="cust-head">Customer 8 · Total post-FG spend: $17.94</div>
+                <div class="cust-head">Customer 8 · Bought 1 100mg bag at full price</div>
                 <div class="cust-orders">
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 13 — /pages/free-gummies</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Apr 13 — /pages/free-gummies</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">free</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 30 — /collections/buy-cbd</span><span>$17.94</span></div>
-                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                        <div class="cust-order-line"><span>Apr 30 — /collections/buy-cbd</span><span>Paid $17.94</span></div>
+                        <div class="cust-order-item">CBD Gummies 100mg Bag <span class="paid-tag">$9.99 list (full price + tax/ship)</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="cust-card">
-                <div class="cust-head">Customer 9 · Total post-FG spend: $24.05</div>
+                <div class="cust-head">Customer 9 · Bought 3 paid products — all near-free after discount</div>
                 <div class="cust-orders">
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Mar 12 — /pages/free-gummies</span><span>$6.95</span></div>
-                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                        <div class="cust-order-line"><span>Mar 12 — /pages/free-gummies</span><span>Paid $6.95</span></div>
+                        <div class="cust-order-item">FREE CBD Gummy Cubes 100mg <span class="free-tag">free</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Mar 20 — /pages/free-gummies</span><span>$8.15</span></div>
-                        <div class="cust-order-item">1× CBD Bath Bomb — Eucalyptus <span class="paid-tag">$14.99</span></div>
+                        <div class="cust-order-line"><span>Mar 20 — /pages/free-gummies</span><span>Paid $8.15</span></div>
+                        <div class="cust-order-item">CBD Bath Bomb — Eucalyptus <span class="paid-tag">$14.99 list, −$14.79 discount → ~$0.20/bath bomb</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 8 — /products/free-cbd-gummies</span><span>$7.95</span></div>
-                        <div class="cust-order-item">1× Dark Chocolate CBD Bar 300mg <span class="paid-tag">$25.00</span></div>
+                        <div class="cust-order-line"><span>Apr 8 — /products/free-cbd-gummies</span><span>Paid $7.95</span></div>
+                        <div class="cust-order-item">Dark Chocolate CBD Bar 300mg <span class="paid-tag">$25.00 list, −$25 discount → free product + $7.95 ship</span></div>
                     </div>
                     <div class="cust-order">
-                        <div class="cust-order-line"><span>Apr 13 — /products/free-cbd-gummies</span><span>$7.95</span></div>
-                        <div class="cust-order-item">1× CBD Bath Bomb — Peppermint &amp; Green Tea <span class="paid-tag">$14.99</span></div>
+                        <div class="cust-order-line"><span>Apr 13 — /products/free-cbd-gummies</span><span>Paid $7.95</span></div>
+                        <div class="cust-order-item">CBD Bath Bomb — Peppermint &amp; Green Tea <span class="paid-tag">$14.99 list, −$14.99 discount → free product + $7.95 ship</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="note">
-                <strong>The pattern across the 9:</strong> Most paid repeats were the $9.99 100mg gummies bag (essentially the larger version of the free product). One customer bought bath bombs and a chocolate bar. None of the 9 bought kids drops, 750mg gummies, 1000mg drops, or any of the higher-margin SKUs. None subscribed.
+                <strong>The pattern across all 9:</strong> Of the 14 paid orders these customers placed, only one was at full list price (Customer 8). Every other "paid" order was a deeply discounted SKU — most often the $9.99 100mg bag knocked down to free or near-free, plus $6.95–$7.95 shipping. Total revenue from all 14 paid orders combined: $223.45. None of these customers bought kids drops, 750mg gummies, 1000mg drops, or any higher-margin product. None subscribed.
             </div>
         </div>
     </div>
 
-    <!-- Section 3: Full P&L -->
+    <!-- Section 3: Full CM math -->
     <div class="card">
-        <div class="card-header"><h2>3 · Full P&amp;L math, line by line</h2></div>
+        <div class="card-header"><h2>3 · Full CM math, line by line</h2></div>
         <div class="card-content">
 
             <h3>Revenue side</h3>
@@ -630,12 +633,11 @@
                     <tr><td>$5,698 Meta spend</td><td>Meta Marketing API, both accounts, daily</td><td><span class="tag tag-teal">Verified</span></td></tr>
                     <tr><td>$0.24/order transaction fee</td><td>$6.95 × 2% + $0.10 — CSV</td><td><span class="tag tag-teal">Sourced</span></td></tr>
                     <tr><td>$8.60/$8.44 paid-product worst-case</td><td>CSV ceiling values</td><td><span class="tag tag-yellow">Conservative</span></td></tr>
-                    <tr><td>~10% repeat reflects long-term truth</td><td>60d window only</td><td><span class="tag tag-yellow">Time-limited</span></td></tr>
                 </tbody>
             </table>
 
             <div class="note">
-                <strong>The big unknown:</strong> 60 days isn't long enough to see whether some FG customers eventually subscribe at month 4, 5, or 6. If a meaningful share of these 547 customers convert later, the math improves. The current Shopify token can only see 60 days of order history — so customers acquired before March 9 are invisible to this analysis. Extending the data window would let us check whether older cohorts eventually became subscribers.
+                <strong>The 60-day cap is a feature, not a bug:</strong> A working acquisition funnel for a bootstrapped brand should be at least neutral on first-order CM, or recover its CAC within 30 days through a real second purchase. 60 days is already a generous window. Customers who haven't bought a profitable product in 60 days are very unlikely to start later — and even if some did, the cash-flow gap of waiting 90+ days to recoup ad spend is not workable when ads are running daily.
             </div>
         </div>
     </div>
@@ -656,7 +658,7 @@
                     <div class="metric-value">$34,663</div>
                 </div>
                 <div class="metric-box">
-                    <h4>Estimated annual loss</h4>
+                    <h4>Estimated annual CM loss</h4>
                     <div class="metric-value neg">−$41,544</div>
                 </div>
                 <div class="metric-box">
@@ -666,55 +668,63 @@
                 </div>
             </div>
 
-            <p style="font-size:0.9rem;color:var(--text-muted);margin-top:1rem;">This projection assumes the 60-day pattern is the steady-state. If LTV emerges in months 3-6 (which is unmeasurable today), this number gets less negative. If repeat rates degrade as the audience matures, it gets worse.</p>
+            <p style="font-size:0.9rem;color:var(--text-muted);margin-top:1rem;">This projection assumes the 60-day pattern is the steady-state. Even if every customer in the 60-day window eventually placed a second profitable order in months 3-6, the cash-flow pattern of paying for acquisition today and waiting a quarter-plus to recoup it isn't workable for a bootstrapped business — the loss between now and then is real, even if it nets out later.</p>
         </div>
     </div>
 
-    <!-- Section 6: Questions -->
+    <!-- Section 6: Recommendation -->
     <div class="card">
-        <div class="card-header"><h2>6 · Questions worth sitting with</h2></div>
+        <div class="card-header"><h2>6 · Recommendation: pause this funnel</h2></div>
         <div class="card-content">
-            <p>This isn't a list of recommendations — these are the questions the data raises.</p>
 
-            <ol class="question-list">
-                <li>Is the free gummy meant to be a brand entry point, an email-list builder, or a profitable acquisition channel? The current setup performs differently against each goal.</li>
-                <li>Does Klaviyo show meaningful email engagement from these 547 contacts? If they're opening emails and clicking but not converting on Shopify in 60 days, the LTV may exist beyond this window.</li>
-                <li>Are there past free gummy customers (acquired in Jan/Feb) who are subscribers today? If yes, the funnel works on a longer timescale than this report can see. If no, the pattern likely holds.</li>
-                <li>Is there an upsell/OTO between the free gummy click and the order confirmation? Of the 547, the ones who bought a paid product mostly did so by going back to the home page — the funnel itself doesn't seem to ask for an upgrade.</li>
-                <li>What's the actual landed cost of the free gummy? The CSV says $1 COGS + $7.40 fulfillment. If real-world fulfillment is higher (e.g. $10+), the loss per customer is larger.</li>
-                <li>Of the 9 paid repeaters, 6 bought the $9.99 100mg bag — essentially "the same product but slightly bigger." Is this a buying signal that suggests a different SKU should be the upsell, or that customers are happy with the free version and never trade up?</li>
-            </ol>
+            <p style="font-size:1.05rem;"><strong>The funnel as it currently runs should be paused.</strong> Not killed permanently — paused. Here's the case for why, in plain terms:</p>
+
+            <h3 style="margin-top:1.25rem;">Why pause</h3>
+            <ul>
+                <li><strong>It's losing −$12.48 per customer over 60 days.</strong> That's not a "wait and see" problem — every dollar of FG ad spend is currently producing a sub-$0.40 dollar of revenue back. The economics aren't there.</li>
+                <li><strong>The repeat behavior signals freebie-seekers, not buyers.</strong> 8.8% came back to claim ANOTHER free gummy. 1.6% bought a paid product, and most of those were also discounted to near-free at checkout. Only one of the 9 "paid repeaters" paid full list price for anything in 60 days.</li>
+                <li><strong>Zero subscriptions started.</strong> The thesis "free gummy → eventual subscriber" isn't showing up in 60 days of data. If it were a quiet conversion engine, we'd see at least a few subscription starts among 547 customers.</li>
+                <li><strong>None of the 547 bought a higher-margin SKU.</strong> No kids drops. No 750mg or 1000mg. No CBN drops. The customer base produced by this funnel is not the customer base that buys profitable products.</li>
+                <li><strong>Continuing the funnel costs ~$2,850/month in CM.</strong> That budget could fund ~$2,800 of testing on a different acquisition path that may have a real chance of being profitable.</li>
+            </ul>
+
+            <h3 style="margin-top:1.25rem;">What "pause" looks like</h3>
+            <ul>
+                <li>Turn off all Meta campaigns pointed at <code style="background:var(--bg-page);padding:0.1rem 0.4rem;border:1px solid #ddd;font-size:0.85rem;">/pages/free-gummies</code> and <code style="background:var(--bg-page);padding:0.1rem 0.4rem;border:1px solid #ddd;font-size:0.85rem;">/products/free-cbd-gummies</code>.</li>
+                <li>Leave the LP itself live (won't affect organic).</li>
+                <li>Redirect the freed budget to test a single alternative acquisition angle on a measurable bar: must produce CM-positive customers within 30 days.</li>
+            </ul>
+
+            <h3 style="margin-top:1.25rem;">When to reconsider</h3>
+            <p>The funnel could be revisited if any of these change:</p>
+            <ul>
+                <li>The free-gummy LP gets a one-time-offer (OTO) added at the cart step that converts at meaningful rate. The current funnel asks for nothing beyond the free claim — it has no upsell mechanism. Without that, the unit economics will not change.</li>
+                <li>Fulfillment cost drops materially (a different 3PL, smaller-pack shipping). At $7.40/unit fulfillment, the offer can't be CM-neutral even at $9.95 shipping.</li>
+                <li>The offer changes structure — e.g., "free + ship + paid product attached" — turning the funnel into a loss-leader bundle rather than a single-SKU freebie.</li>
+            </ul>
+
+            <div class="note">
+                <strong>The bar:</strong> a free-product acquisition funnel for a bootstrapped brand needs to either (a) be CM-neutral on the first order through an OTO/upsell, or (b) recoup its CAC inside the first 30 days through a clear second-purchase path. This funnel does neither. Until one of those structural changes happens, scaling it deeper grows the loss linearly.
+            </div>
         </div>
     </div>
 
-    <!-- Section 7: Suggested directions -->
+    <!-- Section 7: Where to consider redirecting budget -->
     <div class="card">
-        <div class="card-header"><h2>7 · A few directions you could explore</h2></div>
+        <div class="card-header"><h2>7 · Where the freed budget could go</h2></div>
         <div class="card-content">
-            <p>Possible moves, ordered by reversibility. Not prescriptions — just things the data points toward.</p>
+            <p>Not prescriptions — just observations on what the rest of the ad data shows.</p>
 
-            <h3>Low-risk, easy to test</h3>
             <ul>
-                <li><strong>Add a one-time-offer (OTO) page</strong> after the free gummy add-to-cart. If even 5% of customers take a $20-30 upsell, per-customer revenue goes from $1 to $2-3.</li>
-                <li><strong>Watch what older cohorts do.</strong> Wait 60 more days and re-run this analysis. If the W11-W14 cohorts (now 4-8 weeks mature) start showing subscription conversion at month 3-4, the funnel works on a longer timescale than this window can see.</li>
-                <li><strong>Audit Klaviyo for FG-segment email engagement.</strong> If email open/click rates are healthy but Shopify doesn't show conversion, the LTV is being captured by email but not visible in this report.</li>
+                <li><strong>The "10 Reasons Hemp Oil for Kids" LP is the only profitable advertorial.</strong> 1.48x ROAS at $1,259 in 90-day spend, ~$74 CPA. Three ads currently point at it. Worth more creative volume here.</li>
+                <li><strong>The "PANDAS Root Cause" ad and the BOGO Sale ads consistently land between 1.4× and 1.8× ROAS</strong> at $300-$2,400 spend per ad. Different from the FG funnel: these ads sell a specific product to a specific buyer. Adding more creative variants in the same vein is lower-risk than scaling FG.</li>
+                <li><strong>The Sleep CBN V2 advertorial built earlier this year has only received ~$917 of spend across 2 ads in 90 days.</strong> Underspent vs. comparable advertorials. If a fraction of FG budget went here, we'd at least learn whether this funnel works at scale.</li>
             </ul>
 
-            <h3>Medium-risk, would change the funnel shape</h3>
-            <ul>
-                <li><strong>Cap free-gummy spend.</strong> Instead of pulling it, hold it at a level where the loss is acceptable as a brand cost (e.g., $50/day instead of ~$95/day) and free up budget for tests on other angles.</li>
-                <li><strong>Test "free + ship + paid product"</strong> — same offer with a paid product attached at the cart step.</li>
-                <li><strong>Repoint the free-gummy ads at a different LP</strong> that pre-sells before the free claim, similar to the advertorial structure used for ADHD/PANDAS/Anxiety.</li>
-            </ul>
-
-            <h3>Higher-risk, only if the data above is decisive</h3>
-            <ul>
-                <li><strong>Pause the free-gummy funnel entirely</strong> for 30 days. Watch what happens to total Shopify revenue. If it stays flat, the funnel wasn't producing measurable LTV. If it drops, it was — and you can quantify by how much.</li>
-            </ul>
-
-            <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.5rem;">The data above is what's observable in the 60-day Shopify window. None of these directions are obvious wins or obvious mistakes — they each have reasons to try and reasons to wait. The right call depends on context the report doesn't have: brand positioning, email LTV from Klaviyo, what other funnels are already in motion.</p>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.25rem;">These are not commitments — they're places where the existing 90 days of data shows a better signal than the FG funnel does. The pause itself is the recommendation; where the freed budget goes is your call.</p>
         </div>
     </div>
+
 
     <!-- Footer -->
     <div class="card">
