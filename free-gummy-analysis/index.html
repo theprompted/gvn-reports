@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GVN — Free Gummy Funnel Analysis</title>
+    <style>
+        :root {
+            --bg-page: #F8F8F7;
+            --bg-white: #ffffff;
+            --bg-blue: #EBF9FF;
+            --bg-purple: #F7F1FF;
+            --bg-yellow: #FFFDE7;
+            --bg-green: #E8F5E9;
+            --bg-red: #FFF0F0;
+            --accent-teal: #53DBC9;
+            --accent-yellow: #FFDE00;
+            --accent-purple: #9D4EDD;
+            --accent-red: #E53935;
+            --text-black: #000000;
+            --text-dark: #1a1a1a;
+            --text-gray: #4a4a4a;
+            --text-muted: #6b6b6b;
+            --shadow-lg: -0.31rem 0.31rem 0 0 #383838;
+            --shadow-sm: -0.19rem 0.19rem 0 0 #383838;
+            --border: 2px solid black;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-dark);
+            background: var(--bg-page);
+            padding: 2rem 1.5rem;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1, h2, h3, h4 {
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            font-weight: 700;
+            color: var(--text-black);
+        }
+        h1 { font-size: 2.25rem; line-height: 1.2; }
+        h2 { font-size: 1.4rem; margin-bottom: 0.75rem; }
+        h3 { font-size: 1.05rem; margin-bottom: 0.5rem; }
+        h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-gray);
+        }
+        p { margin-bottom: 1rem; }
+        p:last-child { margin-bottom: 0; }
+        .card {
+            background: var(--bg-white);
+            border: var(--border);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+        }
+        .card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: var(--border);
+            background: var(--bg-page);
+        }
+        .card-content { padding: 1.5rem; }
+        .card-content > h2 { margin-top: 1.5rem; }
+        .card-content > h2:first-child { margin-top: 0; }
+        .card-content > h3 { margin-top: 1.25rem; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin: 0.75rem 0;
+        }
+        th {
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            text-align: left;
+            padding: 0.75rem 0.5rem;
+            border-bottom: var(--border);
+            background: var(--bg-page);
+            color: var(--text-gray);
+        }
+        td {
+            padding: 0.6rem 0.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        tr:last-child td { border-bottom: none; }
+        .num-right { text-align: right; font-variant-numeric: tabular-nums; }
+        .row-total {
+            font-weight: 700;
+            border-top: var(--border);
+            background: var(--bg-page);
+        }
+        .row-total td { padding: 0.75rem 0.5rem; }
+        .tag {
+            display: inline-block;
+            border: var(--border);
+            padding: 0.25rem 0.75rem;
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .tag-red { background: #FFCDD2; }
+        .tag-yellow { background: var(--accent-yellow); }
+        .tag-teal { background: var(--accent-teal); }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        .metric-box {
+            background: var(--bg-white);
+            border: var(--border);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .metric-box h4 { margin-bottom: 0.25rem; }
+        .metric-value {
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        .metric-value.neg { color: var(--accent-red); }
+        .metric-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        .note {
+            border: var(--border);
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0;
+            box-shadow: var(--shadow-sm);
+            background: var(--bg-yellow);
+            border-left: 6px solid #F9A825;
+            font-size: 0.9rem;
+        }
+        .note-blue {
+            background: var(--bg-blue);
+            border-left-color: #0288D1;
+        }
+        .waterfall { margin: 1.5rem 0; }
+        .wf-row {
+            display: flex;
+            align-items: center;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.95rem;
+        }
+        .wf-label { flex: 1; }
+        .wf-amount {
+            width: 130px;
+            text-align: right;
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            font-weight: 700;
+        }
+        .wf-source {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.15rem;
+        }
+        .wf-row-sub { padding-left: 1.25rem; }
+        .wf-total {
+            border-top: var(--border);
+            border-bottom: var(--border);
+            font-weight: 700;
+            padding: 0.85rem 0;
+            font-size: 1.05rem;
+        }
+        .wf-total.neg .wf-amount { color: var(--accent-red); }
+        .neg { color: var(--accent-red); }
+        .pos { color: #2E7D32; }
+        strong { font-weight: 700; }
+        .cust-card {
+            border: var(--border);
+            margin-bottom: 1rem;
+            background: var(--bg-white);
+        }
+        .cust-head {
+            background: var(--bg-page);
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--text-gray);
+            font-weight: 700;
+        }
+        .cust-orders { padding: 0.5rem 1rem 0.75rem 1rem; }
+        .cust-order {
+            font-size: 0.85rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .cust-order:last-child { border-bottom: none; }
+        .cust-order-line {
+            display: flex;
+            justify-content: space-between;
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+        }
+        .cust-order-item { padding-left: 1rem; color: var(--text-dark); }
+        .free-tag {
+            display: inline-block;
+            background: var(--bg-yellow);
+            border: 1px solid black;
+            padding: 0 0.4rem;
+            font-size: 0.7rem;
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            font-weight: 700;
+            margin-left: 0.4rem;
+        }
+        .paid-tag {
+            display: inline-block;
+            background: var(--bg-green);
+            border: 1px solid black;
+            padding: 0 0.4rem;
+            font-size: 0.7rem;
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            font-weight: 700;
+            margin-left: 0.4rem;
+        }
+        .ascii-bar {
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            white-space: pre;
+            line-height: 1.5;
+            font-size: 0.85rem;
+        }
+        .source-line {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+        ul, ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+        li { margin-bottom: 0.4rem; }
+        .question-list li {
+            font-weight: 500;
+            margin-bottom: 0.65rem;
+        }
+        .toc {
+            background: var(--bg-page);
+            padding: 1rem 1.25rem;
+            border: 1px solid #ccc;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .toc strong { display: block; margin-bottom: 0.4rem; font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-gray); }
+        .toc ol { margin: 0; padding-left: 1.25rem; }
+        .toc li { margin-bottom: 0.2rem; }
+        a { color: var(--accent-purple); }
+        @media (max-width: 600px) {
+            body { padding: 1rem; }
+            h1 { font-size: 1.65rem; }
+            .card-content { padding: 1.25rem; }
+            .metric-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+            .metric-value { font-size: 1.4rem; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 0.5rem 0.35rem; }
+            .wf-amount { width: 100px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- Header -->
+    <div class="card">
+        <div class="card-content">
+            <div style="width:3rem;height:3rem;background:var(--accent-teal);border:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem;margin-bottom:1rem;">📊</div>
+            <h1>Free Gummy Funnel — 60-Day Customer Behavior Analysis</h1>
+            <p style="color:var(--text-gray);margin-top:0.5rem;font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;font-size:0.85rem;">Green Valley Nutrition · March 9 – May 7, 2026</p>
+
+            <div class="toc">
+                <strong>What's in here</strong>
+                <ol>
+                    <li>The numbers at a glance</li>
+                    <li>What the customers actually did (real order data)</li>
+                    <li>The full P&amp;L math, line by line</li>
+                    <li>What the math depends on</li>
+                    <li>Annualized projection if nothing changes</li>
+                    <li>Questions worth sitting with</li>
+                    <li>A few directions you could explore</li>
+                </ol>
+            </div>
+
+            <p style="font-size:0.95rem;">This is a look at every customer who came in through <code style="background:var(--bg-page);padding:0.1rem 0.4rem;border:1px solid #ddd;font-size:0.85rem;">/pages/free-gummies</code> in the last 60 days, what they did after that first order, and what the funnel cost vs. produced. The goal is to put the data in front of you. Conclusions are yours to draw.</p>
+        </div>
+    </div>
+
+    <!-- Section 1: At a glance -->
+    <div class="card">
+        <div class="card-header"><h2>1 · The numbers at a glance</h2></div>
+        <div class="card-content">
+            <div class="metric-grid">
+                <div class="metric-box">
+                    <h4>Customers acquired</h4>
+                    <div class="metric-value">547</div>
+                    <div class="metric-sub">99.3% via Meta (fbclid)</div>
+                </div>
+                <div class="metric-box">
+                    <h4>Meta spend</h4>
+                    <div class="metric-value">$5,698</div>
+                    <div class="metric-sub">FREE_GUMMIES campaigns, 60d</div>
+                </div>
+                <div class="metric-box">
+                    <h4>Revenue from these customers</h4>
+                    <div class="metric-value">$4,435</div>
+                    <div class="metric-sub">FG orders + downstream</div>
+                </div>
+                <div class="metric-box">
+                    <h4>60-day contribution margin</h4>
+                    <div class="metric-value neg">−$6,829</div>
+                    <div class="metric-sub">Rev − COGS − fulfillment − fees − ads</div>
+                </div>
+            </div>
+
+            <div class="note note-blue">
+                <strong>Reading the headline:</strong> The funnel acquired 547 customers in 60 days. The revenue those customers produced (across every order they placed) was $4,435. The total cost to acquire and fulfill them was $11,264. Net loss for the 60-day period: $6,829.
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: What customers actually did -->
+    <div class="card">
+        <div class="card-header"><h2>2 · What the 547 customers actually did</h2></div>
+        <div class="card-content">
+
+            <p>For each of the 547 customers, every subsequent order they placed in the 60-day window was reviewed. Here's what happened:</p>
+
+            <table>
+                <thead>
+                    <tr><th>Behavior after first free gummy order</th><th class="num-right">Customers</th><th class="num-right">% of acquired</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Did not order again</td><td class="num-right">490</td><td class="num-right">89.6%</td></tr>
+                    <tr><td>Came back to claim ANOTHER free gummy (only)</td><td class="num-right">48</td><td class="num-right">8.8%</td></tr>
+                    <tr><td>Came back and bought a paid (non-free) product</td><td class="num-right">9</td><td class="num-right">1.6%</td></tr>
+                    <tr><td>Started a subscription</td><td class="num-right">0</td><td class="num-right">0.0%</td></tr>
+                    <tr class="row-total"><td>Total</td><td class="num-right">547</td><td class="num-right">100%</td></tr>
+                </tbody>
+            </table>
+
+            <p class="source-line">Source: every paid order from the 547 customers, pulled from Shopify Admin API, customer-by-customer, order-by-order.</p>
+
+            <h3 style="margin-top:1.5rem;">The 9 customers who bought something non-free</h3>
+            <p>These are the 9 customers who placed any order containing a non-free product. Their full order histories are below — verbatim from the order data.</p>
+
+            <div class="cust-card">
+                <div class="cust-head">Customer 1 · Total post-FG spend: $7.49</div>
+                <div class="cust-orders">
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 28 — /pages/free-gummies</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>May 5 — / (home)</span><span>$7.49</span></div>
+                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cust-card">
+                <div class="cust-head">Customer 2 · Total post-FG spend: $7.95</div>
+                <div class="cust-orders">
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 24 — /pages/free-gummies</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 24 — / (home, ~10hr later)</span><span>$7.95</span></div>
+                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cust-card">
+                <div class="cust-head">Customer 3 · Total post-FG spend: $21.90</div>
+                <div class="cust-orders">
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 16 — /pages/free-gummies</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 24 — /collections/buy-cbd</span><span>$21.90</span></div>
+                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                        <div class="cust-order-item">1× Dark Chocolate CBD Bar 300mg <span class="paid-tag">$18.75</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cust-card">
+                <div class="cust-head">Customer 4 · Total post-FG spend: $20.87</div>
+                <div class="cust-orders">
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Mar 19 — /pages/free-gummies</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Mar 31 — /pages/free-gummies (again)</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 3 — /pages/free-gummies (3rd time)</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 3 — / (home, hours later)</span><span>$7.95</span></div>
+                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 11 — / (home)</span><span>$12.92</span></div>
+                        <div class="cust-order-item">3× CBD Gummies 100mg Bag <span class="paid-tag">$9.99 ea</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cust-card">
+                <div class="cust-head">Customer 5 · Total post-FG spend: $13.14</div>
+                <div class="cust-orders">
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 10 — /pages/free-gummies</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 10 — / (home, ~30 min later)</span><span>$13.14</span></div>
+                        <div class="cust-order-item">2× CBD Gummies 100mg Bag <span class="paid-tag">$9.99 ea</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cust-card">
+                <div class="cust-head">Customer 6 · Total post-FG spend: $13.14</div>
+                <div class="cust-orders">
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>May 1 — /pages/free-gummies</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>May 1 — / (home, 18 min later)</span><span>$13.14</span></div>
+                        <div class="cust-order-item">2× CBD Gummies 100mg Bag <span class="paid-tag">$9.99 ea</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cust-card">
+                <div class="cust-head">Customer 7 · Total post-FG spend: $7.95</div>
+                <div class="cust-orders">
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Mar 14 — /pages/free-gummies</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 12 — /products/free-cbd-gummies (again)</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 20 — /products/free-cbd-gummies</span><span>$7.95</span></div>
+                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cust-card">
+                <div class="cust-head">Customer 8 · Total post-FG spend: $17.94</div>
+                <div class="cust-orders">
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 13 — /pages/free-gummies</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 30 — /collections/buy-cbd</span><span>$17.94</span></div>
+                        <div class="cust-order-item">1× CBD Gummies 100mg Bag <span class="paid-tag">$9.99</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cust-card">
+                <div class="cust-head">Customer 9 · Total post-FG spend: $24.05</div>
+                <div class="cust-orders">
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Mar 12 — /pages/free-gummies</span><span>$6.95</span></div>
+                        <div class="cust-order-item">1× FREE CBD Gummy Cubes 100mg <span class="free-tag">FREE</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Mar 20 — /pages/free-gummies</span><span>$8.15</span></div>
+                        <div class="cust-order-item">1× CBD Bath Bomb — Eucalyptus <span class="paid-tag">$14.99</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 8 — /products/free-cbd-gummies</span><span>$7.95</span></div>
+                        <div class="cust-order-item">1× Dark Chocolate CBD Bar 300mg <span class="paid-tag">$25.00</span></div>
+                    </div>
+                    <div class="cust-order">
+                        <div class="cust-order-line"><span>Apr 13 — /products/free-cbd-gummies</span><span>$7.95</span></div>
+                        <div class="cust-order-item">1× CBD Bath Bomb — Peppermint &amp; Green Tea <span class="paid-tag">$14.99</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note">
+                <strong>The pattern across the 9:</strong> Most paid repeats were the $9.99 100mg gummies bag (essentially the larger version of the free product). One customer bought bath bombs and a chocolate bar. None of the 9 bought kids drops, 750mg gummies, 1000mg drops, or any of the higher-margin SKUs. None subscribed.
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Full P&L -->
+    <div class="card">
+        <div class="card-header"><h2>3 · Full P&amp;L math, line by line</h2></div>
+        <div class="card-content">
+
+            <h3>Revenue side</h3>
+            <table>
+                <thead><tr><th>Source</th><th class="num-right">Orders</th><th class="num-right">Revenue</th></tr></thead>
+                <tbody>
+                    <tr><td>Free gummy orders ($6.95 shipping each)</td><td class="num-right">606</td><td class="num-right">$4,211.70</td></tr>
+                    <tr><td>Non-free orders by these 547 customers</td><td class="num-right">14</td><td class="num-right">$223.45</td></tr>
+                    <tr><td>Subscription orders started</td><td class="num-right">0</td><td class="num-right">$0.00</td></tr>
+                    <tr class="row-total"><td>Total revenue from FG customer base</td><td class="num-right">620</td><td class="num-right">$4,435.15</td></tr>
+                </tbody>
+            </table>
+
+            <h3 style="margin-top:1.5rem;">Cost side</h3>
+            <p>Per-unit costs come from the GVN Unit Economics CSV (Mar 20, 2026). For paid products, worst-case values from that CSV are used to bias conservative.</p>
+
+            <div class="waterfall">
+                <div class="wf-row">
+                    <div class="wf-label">
+                        <div>Free gummy COGS</div>
+                        <div class="wf-source">606 units × $1.00 — CSV</div>
+                    </div>
+                    <div class="wf-amount neg">−$606.00</div>
+                </div>
+                <div class="wf-row">
+                    <div class="wf-label">
+                        <div>Free gummy fulfillment</div>
+                        <div class="wf-source">606 units × $7.40 — CSV</div>
+                    </div>
+                    <div class="wf-amount neg">−$4,484.40</div>
+                </div>
+                <div class="wf-row">
+                    <div class="wf-label">
+                        <div>Paid product COGS (worst-case)</div>
+                        <div class="wf-source">19 units × $8.60 ceiling</div>
+                    </div>
+                    <div class="wf-amount neg">−$163.40</div>
+                </div>
+                <div class="wf-row">
+                    <div class="wf-label">
+                        <div>Paid product fulfillment</div>
+                        <div class="wf-source">19 units × $8.44</div>
+                    </div>
+                    <div class="wf-amount neg">−$160.36</div>
+                </div>
+                <div class="wf-row">
+                    <div class="wf-label">
+                        <div>Transaction fees</div>
+                        <div class="wf-source">2% + $0.10 per order — CSV</div>
+                    </div>
+                    <div class="wf-amount neg">−$152.14</div>
+                </div>
+                <div class="wf-row">
+                    <div class="wf-label">
+                        <div>Meta ad spend on FREE_GUMMIES campaigns</div>
+                        <div class="wf-source">Meta Marketing API, both ad accounts, Mar 9 – May 7</div>
+                    </div>
+                    <div class="wf-amount neg">−$5,698.00</div>
+                </div>
+                <div class="wf-row wf-total">
+                    <div class="wf-label">Total costs</div>
+                    <div class="wf-amount neg">−$11,264.30</div>
+                </div>
+            </div>
+
+            <h3>Net result (60 days)</h3>
+            <div class="waterfall">
+                <div class="wf-row">
+                    <div class="wf-label">Revenue</div>
+                    <div class="wf-amount">$4,435.15</div>
+                </div>
+                <div class="wf-row">
+                    <div class="wf-label">Total costs</div>
+                    <div class="wf-amount neg">−$11,264.30</div>
+                </div>
+                <div class="wf-row wf-total neg">
+                    <div class="wf-label">Contribution margin</div>
+                    <div class="wf-amount">−$6,829.15</div>
+                </div>
+            </div>
+
+            <div class="metric-grid" style="margin-top:1.5rem;">
+                <div class="metric-box">
+                    <h4>CM per customer acquired</h4>
+                    <div class="metric-value neg">−$12.48</div>
+                </div>
+                <div class="metric-box">
+                    <h4>CM per Meta-attributed customer</h4>
+                    <div class="metric-value neg">−$12.58</div>
+                </div>
+                <div class="metric-box">
+                    <h4>Avg downstream rev per customer</h4>
+                    <div class="metric-value">$1.00</div>
+                    <div class="metric-sub">across all 547</div>
+                </div>
+                <div class="metric-box">
+                    <h4>Break-even rev per customer needed</h4>
+                    <div class="metric-value">$13.48</div>
+                    <div class="metric-sub">currently $12.48 short</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: What the math depends on -->
+    <div class="card">
+        <div class="card-header"><h2>4 · What the math depends on</h2></div>
+        <div class="card-content">
+
+            <table>
+                <thead><tr><th>Input</th><th>Source</th><th>Confidence</th></tr></thead>
+                <tbody>
+                    <tr><td>547 customers, 606 FG orders, 14 paid orders</td><td>Shopify Admin API, customer-level</td><td><span class="tag tag-teal">Verified</span></td></tr>
+                    <tr><td>$1.00 free gummy COGS</td><td>GVN Unit Economics CSV (Mar 20)</td><td><span class="tag tag-teal">Sourced</span></td></tr>
+                    <tr><td>$7.40 free gummy fulfillment</td><td>Same CSV</td><td><span class="tag tag-teal">Sourced</span></td></tr>
+                    <tr><td>$5,698 Meta spend</td><td>Meta Marketing API, both accounts, daily</td><td><span class="tag tag-teal">Verified</span></td></tr>
+                    <tr><td>$0.24/order transaction fee</td><td>$6.95 × 2% + $0.10 — CSV</td><td><span class="tag tag-teal">Sourced</span></td></tr>
+                    <tr><td>$8.60/$8.44 paid-product worst-case</td><td>CSV ceiling values</td><td><span class="tag tag-yellow">Conservative</span></td></tr>
+                    <tr><td>~10% repeat reflects long-term truth</td><td>60d window only</td><td><span class="tag tag-yellow">Time-limited</span></td></tr>
+                </tbody>
+            </table>
+
+            <div class="note">
+                <strong>The big unknown:</strong> 60 days isn't long enough to see whether some FG customers eventually subscribe at month 4, 5, or 6. If a meaningful share of these 547 customers convert later, the math improves. The current Shopify token can only see 60 days of order history — so customers acquired before March 9 are invisible to this analysis. Extending the data window would let us check whether older cohorts eventually became subscribers.
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: Annualized projection -->
+    <div class="card">
+        <div class="card-header"><h2>5 · If nothing changes — annualized projection</h2></div>
+        <div class="card-content">
+            <p>Same Meta spend rate, same customer behavior, projected over 12 months:</p>
+
+            <div class="metric-grid">
+                <div class="metric-box">
+                    <h4>Customers/year</h4>
+                    <div class="metric-value">3,328</div>
+                </div>
+                <div class="metric-box">
+                    <h4>Meta spend/year</h4>
+                    <div class="metric-value">$34,663</div>
+                </div>
+                <div class="metric-box">
+                    <h4>Estimated annual loss</h4>
+                    <div class="metric-value neg">−$41,544</div>
+                </div>
+                <div class="metric-box">
+                    <h4>Subscriptions started</h4>
+                    <div class="metric-value">0</div>
+                    <div class="metric-sub">at current pattern</div>
+                </div>
+            </div>
+
+            <p style="font-size:0.9rem;color:var(--text-muted);margin-top:1rem;">This projection assumes the 60-day pattern is the steady-state. If LTV emerges in months 3-6 (which is unmeasurable today), this number gets less negative. If repeat rates degrade as the audience matures, it gets worse.</p>
+        </div>
+    </div>
+
+    <!-- Section 6: Questions -->
+    <div class="card">
+        <div class="card-header"><h2>6 · Questions worth sitting with</h2></div>
+        <div class="card-content">
+            <p>This isn't a list of recommendations — these are the questions the data raises.</p>
+
+            <ol class="question-list">
+                <li>Is the free gummy meant to be a brand entry point, an email-list builder, or a profitable acquisition channel? The current setup performs differently against each goal.</li>
+                <li>Does Klaviyo show meaningful email engagement from these 547 contacts? If they're opening emails and clicking but not converting on Shopify in 60 days, the LTV may exist beyond this window.</li>
+                <li>Are there past free gummy customers (acquired in Jan/Feb) who are subscribers today? If yes, the funnel works on a longer timescale than this report can see. If no, the pattern likely holds.</li>
+                <li>Is there an upsell/OTO between the free gummy click and the order confirmation? Of the 547, the ones who bought a paid product mostly did so by going back to the home page — the funnel itself doesn't seem to ask for an upgrade.</li>
+                <li>What's the actual landed cost of the free gummy? The CSV says $1 COGS + $7.40 fulfillment. If real-world fulfillment is higher (e.g. $10+), the loss per customer is larger.</li>
+                <li>Of the 9 paid repeaters, 6 bought the $9.99 100mg bag — essentially "the same product but slightly bigger." Is this a buying signal that suggests a different SKU should be the upsell, or that customers are happy with the free version and never trade up?</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Section 7: Suggested directions -->
+    <div class="card">
+        <div class="card-header"><h2>7 · A few directions you could explore</h2></div>
+        <div class="card-content">
+            <p>Possible moves, ordered by reversibility. Not prescriptions — just things the data points toward.</p>
+
+            <h3>Low-risk, easy to test</h3>
+            <ul>
+                <li><strong>Add a one-time-offer (OTO) page</strong> after the free gummy add-to-cart. If even 5% of customers take a $20-30 upsell, per-customer revenue goes from $1 to $2-3.</li>
+                <li><strong>Watch what older cohorts do.</strong> Wait 60 more days and re-run this analysis. If the W11-W14 cohorts (now 4-8 weeks mature) start showing subscription conversion at month 3-4, the funnel works on a longer timescale than this window can see.</li>
+                <li><strong>Audit Klaviyo for FG-segment email engagement.</strong> If email open/click rates are healthy but Shopify doesn't show conversion, the LTV is being captured by email but not visible in this report.</li>
+            </ul>
+
+            <h3>Medium-risk, would change the funnel shape</h3>
+            <ul>
+                <li><strong>Cap free-gummy spend.</strong> Instead of pulling it, hold it at a level where the loss is acceptable as a brand cost (e.g., $50/day instead of ~$95/day) and free up budget for tests on other angles.</li>
+                <li><strong>Test "free + ship + paid product"</strong> — same offer with a paid product attached at the cart step.</li>
+                <li><strong>Repoint the free-gummy ads at a different LP</strong> that pre-sells before the free claim, similar to the advertorial structure used for ADHD/PANDAS/Anxiety.</li>
+            </ul>
+
+            <h3>Higher-risk, only if the data above is decisive</h3>
+            <ul>
+                <li><strong>Pause the free-gummy funnel entirely</strong> for 30 days. Watch what happens to total Shopify revenue. If it stays flat, the funnel wasn't producing measurable LTV. If it drops, it was — and you can quantify by how much.</li>
+            </ul>
+
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-top:1.5rem;">The data above is what's observable in the 60-day Shopify window. None of these directions are obvious wins or obvious mistakes — they each have reasons to try and reasons to wait. The right call depends on context the report doesn't have: brand positioning, email LTV from Klaviyo, what other funnels are already in motion.</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="card">
+        <div class="card-content" style="text-align:center;font-size:0.8rem;color:var(--text-muted);">
+            <p>Data sources: Shopify Admin API (orders, line items, customers), Meta Marketing API (campaign-level daily spend), GVN Unit Economics CSV.</p>
+            <p style="margin-top:0.5rem;">Period: March 9, 2026 – May 7, 2026 · Generated May 8, 2026</p>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
