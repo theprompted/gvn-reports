@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GVN PANDAS Ad Drafts — 20 Survivor-Voice Ads</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #F8F8F7; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; min-height: 100vh; }
+        .feed-container { max-width: 1400px; margin: 0 auto; }
+        .grid-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+        @media (max-width: 1200px) { .grid-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 800px) { .grid-row { grid-template-columns: 1fr; max-width: 500px; margin-left: auto; margin-right: auto; } }
+        .grid-item { display: flex; flex-direction: column; }
+        .page-header { background: #2D8B3A; border: 2px solid #000; border-radius: 4px; padding: 20px 24px; margin-bottom: 24px; box-shadow: -.31rem .31rem 0 0 #383838; }
+        .page-header h1 { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .page-header p { font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: rgba(255, 255, 255, 0.9); }
+        .intro-block { background: #fff; border: 2px solid #000; border-radius: 4px; padding: 24px 28px; margin-bottom: 24px; box-shadow: -.19rem .19rem 0 0 #383838; }
+        .intro-block h2 { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: #000; margin-bottom: 16px; }
+        .intro-block p { font-size: 15px; line-height: 1.7; color: #333; margin-bottom: 12px; }
+        .intro-block p:last-child { margin-bottom: 0; }
+        .draft-label { background: #2D8B3A; color: white; padding: 8px 12px; border-radius: 8px 8px 0 0; font-weight: 500; font-size: 13px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .draft-label .angle { font-size: 11px; opacity: 0.9; text-align: right; }
+        .fb-post { background: #fff; border-radius: 0 0 8px 8px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); overflow: hidden; flex: 1; display: flex; flex-direction: column; }
+        .post-header { padding: 12px; display: flex; align-items: center; gap: 8px; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #2D8B3A 0%, #1a5c24 100%); display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; font-weight: 600; }
+        .post-meta { flex: 1; }
+        .page-name { font-weight: 600; font-size: 13px; color: #050505; display: flex; align-items: center; gap: 4px; }
+        .verified { width: 12px; height: 12px; background: #1877f2; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 8px; color: white; }
+        .sponsored { font-size: 11px; color: #65676b; }
+        .more-btn { color: #65676b; font-size: 16px; cursor: pointer; padding: 4px; }
+        .post-text { padding: 0 12px 10px; font-size: 14px; line-height: 1.4; color: #050505; white-space: pre-line; }
+        .post-text.collapsed { max-height: 100px; overflow: hidden; position: relative; }
+        .post-text.collapsed::after { content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 30px; background: linear-gradient(transparent, white); }
+        .post-text.expanded { max-height: none; }
+        .post-text.expanded::after { display: none; }
+        .see-more-btn { padding: 0 12px 10px; color: #65676b; font-size: 14px; cursor: pointer; }
+        .see-more-btn:hover { text-decoration: underline; }
+        .post-image { width: 100%; overflow: hidden; position: relative; background: #e4e6eb; }
+        .post-image img { width: 100%; display: block; }
+        .link-preview { background: #f0f2f5; padding: 10px 12px; border-top: 1px solid #dddfe2; }
+        .link-preview .domain { font-size: 11px; color: #65676b; text-transform: uppercase; margin-bottom: 2px; }
+        .link-preview .title { font-size: 14px; font-weight: 600; color: #050505; margin-bottom: 2px; line-height: 1.3; }
+        .link-preview .description { font-size: 12px; color: #65676b; line-height: 1.3; }
+        .cta-row { padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #dddfe2; margin-top: auto; }
+        .cta-button { background: #1877f2; color: white; padding: 6px 16px; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; border: none; }
+        .reactions { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #65676b; }
+        .action-buttons { display: flex; gap: 8px; padding: 8px 12px; background: #f8f9fa; border-top: 1px solid #dddfe2; }
+        .action-btn { flex: 1; padding: 8px 12px; border: 1px solid #dddfe2; border-radius: 6px; background: #fff; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s; }
+        .action-btn:hover { background: #f0f2f5; border-color: #c4c4c4; }
+        .action-btn.copied { background: #d4edda; border-color: #28a745; color: #155724; }
+        .action-btn .icon { font-size: 14px; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 14px; z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <div class="feed-container">
+        <div class="page-header">
+            <h1>GVN PANDAS Ad Drafts</h1>
+            <p>20 survivor-voice native image ads for Facebook | Leads to: "I Spent $50,000 to Fix My Motor Tics — This Is the Only Thing That Worked"</p>
+        </div>
+        <div class="intro-block">
+            <h2>Survivor-Voice Confession</h2>
+            <p>The narrator on the landing page is an adult who had PANDAS as a teenager. The body of these ads keeps that voice — first person, recounting their own motor tics, their own $50,000 chase with their parents, their own recovery.</p>
+            <p>The audience is still parents searching for answers for their own child. What makes the testimony land is hearing the future their child could have, narrated by someone who already got there.</p>
+            <p>Every ad anchors on three things from the on-image headline: <strong>my motor tics</strong>, <strong>$50,000 burned</strong>, and <strong>"the one thing that worked."</strong> Meta Headlines extend that reveal — they never pivot to naming PANDAS. The funnel does the naming. The ad only sells the click.</p>
+        </div>
+
+        <div class="grid-row">
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 1 &middot; ID 062
+                    <span class="angle">Native-Advertorial · Hidden Cause</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-1">Four neurologists. Two psychiatrists. By the time I was seventeen my parents and I had spent fifty thousand dollars trying to make my shoulder stop jerking.
+
+Not one of those specialists ever named what was actually wrong with me.
+
+The thing that finally stopped my tics wasn&#x27;t on any of their lists.</div>
+                    <div class="see-more-btn" onclick="toggleText(1)">See more</div>
+                    <div class="post-image">
+                        <img src="images/native-advertorial-062.png" alt="Ad 1">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What Four Neurologists Missed</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 2 &middot; ID 067
+                    <span class="angle">Native-Advertorial · The Reveal</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-2">My tics started on a Tuesday when I was fourteen. By Friday my whole face was involved.
+
+My parents and I spent the next two years and almost fifty thousand dollars trying to make them stop.
+
+One thing finally did. It wasn&#x27;t from a doctor.</div>
+                    <div class="see-more-btn" onclick="toggleText(2)">See more</div>
+                    <div class="post-image">
+                        <img src="images/native-advertorial-067.png" alt="Ad 2">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What Actually Stopped the Tics</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 3 &middot; ID 092
+                    <span class="angle">Native-Advertorial · Aftermath</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-3">My shoulder hasn&#x27;t jerked in six weeks.
+
+Before this, it was happening every forty-five seconds. I counted, because that&#x27;s what you do when your own body won&#x27;t stop.
+
+After fifty thousand dollars in specialists, the thing that finally worked cost almost nothing.</div>
+                    <div class="see-more-btn" onclick="toggleText(3)">See more</div>
+                    <div class="post-image">
+                        <img src="images/native-advertorial-092.png" alt="Ad 3">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What Finally Quieted My Shoulder</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid-row">
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 4 &middot; ID 116
+                    <span class="angle">Native-Advertorial · &quot;We Tried Everything&quot;</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-4">I would blink fifty times in a minute and my parents emptied their savings trying to make me stop.
+
+Tens of thousands of dollars. Three years.
+
+Then we tried one thing nobody had mentioned, and inside a month my blinking slowed.</div>
+                    <div class="see-more-btn" onclick="toggleText(4)">See more</div>
+                    <div class="post-image">
+                        <img src="images/native-advertorial-116.png" alt="Ad 4">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">The One Thing Nobody Mentioned</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 5 &middot; ID 305
+                    <span class="angle">Native-News-Advertorial</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-5">My parents and I spent close to fifty thousand dollars trying to fix my motor tics before any doctor even said the right word out loud.
+
+Pediatricians. Neurologists. An SSRI trial that made my tics worse.
+
+Here&#x27;s what I&#x27;d tell the version of me from two years ago.</div>
+                    <div class="see-more-btn" onclick="toggleText(5)">See more</div>
+                    <div class="post-image">
+                        <img src="images/native-news-advertorial-305.png" alt="Ad 5">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What I&#x27;d Tell Myself Two Years Ago</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 6 &middot; ID 068
+                    <span class="angle">Myth-Buster · Tics ≠ Neurological</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-6">Every time my shoulder jerked, my mom flinched a little. She tried not to. I noticed.
+
+Four specialists, fifty thousand dollars, a year of &quot;she&#x27;ll outgrow it.&quot; I didn&#x27;t.
+
+Motor tics aren&#x27;t always neurological. Sometimes they&#x27;re something a twelve-dollar swab can find.</div>
+                    <div class="see-more-btn" onclick="toggleText(6)">See more</div>
+                    <div class="post-image">
+                        <img src="images/myth-buster-proof-068.png" alt="Ad 6">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What a $12 Swab Caught First</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid-row">
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 7 &middot; ID 069
+                    <span class="angle">Myth-Buster · The Skipped Test</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-7">Other kids ran. I stood frozen — head jerking, eyes blinking, shoulders shrugging.
+
+My parents and I spent two years and almost fifty thousand dollars trying to fix it the way doctors told us to fix it.
+
+Then we tried something none of them had suggested.</div>
+                    <div class="see-more-btn" onclick="toggleText(7)">See more</div>
+                    <div class="post-image">
+                        <img src="images/myth-buster-lifestyle-069.png" alt="Ad 7">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What None of the Specialists Suggested</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 8 &middot; ID 052
+                    <span class="angle">Shock-Reframe</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-8">I wrote it on the back of my drawing pad at fourteen because I couldn&#x27;t say it out loud yet.
+
+Fifty thousand dollars in doctor visits, medications, &quot;specialists&quot; — and my tics were worse than the day we started.
+
+One thing actually moved the needle. It wasn&#x27;t from any of them.</div>
+                    <div class="see-more-btn" onclick="toggleText(8)">See more</div>
+                    <div class="post-image">
+                        <img src="images/shock-reframe-052.png" alt="Ad 8">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">The Thing That Wasn&#x27;t from a Doctor</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 9 &middot; ID 136
+                    <span class="angle">Apologetic Manifesto</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-9">I owe my younger self an apology.
+
+My parents and I spent fifty thousand dollars trying to fix my motor tics the way we were told to fix them.
+
+Every dollar went to the wrong thing. The one that worked was the one no specialist had mentioned.</div>
+                    <div class="see-more-btn" onclick="toggleText(9)">See more</div>
+                    <div class="post-image">
+                        <img src="images/apologetic-brand-manifesto-136.png" alt="Ad 9">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">The One That Worked Wasn&#x27;t on the List</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid-row">
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 10 &middot; ID 076
+                    <span class="angle">Pattern Interrupt · Negative Swab</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-10">My strep swab came back negative.
+
+It took another fourteen months, three doctors, and roughly fifty thousand dollars to learn that a negative swab doesn&#x27;t always mean what we thought.
+
+When my tics finally stopped, it was from something none of those doctors had suggested.</div>
+                    <div class="see-more-btn" onclick="toggleText(10)">See more</div>
+                    <div class="post-image">
+                        <img src="images/pattern-interrupt-paradox-076.png" alt="Ad 10">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">Why a Negative Swab Doesn&#x27;t Mean No</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 11 &middot; ID 004
+                    <span class="angle">Founder Letter (Text Only)</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-11">I&#x27;m writing this for whoever is where I was two years and fifty thousand dollars ago.
+
+My motor tics started overnight when I was fourteen. Nothing the doctors prescribed slowed them down.
+
+One thing did. I&#x27;ll tell you what it was.</div>
+                    <div class="see-more-btn" onclick="toggleText(11)">See more</div>
+                    <div class="post-image">
+                        <img src="images/founder-letter-text-only-004.png" alt="Ad 11">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">A Letter from the Kid Who Made It Out</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 12 &middot; ID 005
+                    <span class="angle">Founder Letter (Notes App)</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-12">Typed this into my notes app at 11:47pm, in bed, the first night my tics finally settled.
+
+It took my parents and me fifty thousand dollars and three years to find what calmed them.
+
+I&#x27;m writing it down for whoever this happens to next.</div>
+                    <div class="see-more-btn" onclick="toggleText(12)">See more</div>
+                    <div class="post-image">
+                        <img src="images/founder-letter-social-post-005.png" alt="Ad 12">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What Finally Settled My Tics at Night</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid-row">
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 13 &middot; ID 084
+                    <span class="angle">Notebook Confession</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-13">My mom kept a notebook starting the week my tics began.
+
+Every doctor, every dose, every dollar — by year two the total was past fifty thousand.
+
+The one line that finally mattered is written on the last page.</div>
+                    <div class="see-more-btn" onclick="toggleText(13)">See more</div>
+                    <div class="post-image">
+                        <img src="images/handwritten-notepad-shock-084.png" alt="Ad 13">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What Made It to the Last Page</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 14 &middot; ID 083
+                    <span class="angle">Bathroom Mirror Note</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-14">I wrote it on my mirror after my family had spent fifty thousand dollars and my tics were still getting worse.
+
+Some nights it was the only way I remembered there was anything left to try.
+
+Then we tried the one thing nobody had told us about.</div>
+                    <div class="see-more-btn" onclick="toggleText(14)">See more</div>
+                    <div class="post-image">
+                        <img src="images/bathroom-mirror-message-083.png" alt="Ad 14">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">The One Thing Nobody Told Us</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 15 &middot; ID 179
+                    <span class="angle">Handwritten Note (UGC)</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-15">My hand stopped twitching three weeks ago.
+
+For two years it jerked every few seconds, and my parents and I had spent close to fifty thousand dollars trying to make it stop.
+
+I&#x27;m not going to pretend I know exactly what fixed it. I&#x27;ll tell you what we did.</div>
+                    <div class="see-more-btn" onclick="toggleText(15)">See more</div>
+                    <div class="post-image">
+                        <img src="images/ugc-handwritten-note-179.png" alt="Ad 15">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What Stopped the Twitching in My Hand</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid-row">
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 16 &middot; ID 091
+                    <span class="angle">Problem-Agitate · The Hidden Question</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-16">Three pediatricians. One neurologist. Two psychiatrists. Just shy of fifty thousand dollars.
+
+All of them watched my tics and prescribed something that didn&#x27;t work.
+
+Another patient online told me to ask about one thing none of them had checked.</div>
+                    <div class="see-more-btn" onclick="toggleText(16)">See more</div>
+                    <div class="post-image">
+                        <img src="images/problem-agitate-091.png" alt="Ad 16">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">The One Thing None of Them Checked</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 17 &middot; ID 302
+                    <span class="angle">Pixar · The Switch</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-17">It felt like a switch flipped in my body — head jerk, shoulder shrug, blink. Overnight.
+
+My parents and I spent fifty thousand dollars over two years trying to flip it back.
+
+One thing finally did, and it wasn&#x27;t from any of the specialists we&#x27;d seen.</div>
+                    <div class="see-more-btn" onclick="toggleText(17)">See more</div>
+                    <div class="post-image">
+                        <img src="images/pixar-pain-character-302.png" alt="Ad 17">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What Flipped the Switch Back</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 18 &middot; ID 304
+                    <span class="angle">Cartoon Crisis Scene</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-18">My tics woke me up screaming.
+
+By month four my mom was researching at 3am while I slept. By year two we&#x27;d spent fifty thousand dollars.
+
+The thing that finally worked was something nobody we&#x27;d paid had ever mentioned.</div>
+                    <div class="see-more-btn" onclick="toggleText(18)">See more</div>
+                    <div class="post-image">
+                        <img src="images/cartoon-crisis-scene-304.png" alt="Ad 18">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What Mom Found at 3am After Spending $50K</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="grid-row">
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 19 &middot; ID 049
+                    <span class="angle">Listicle · The Pattern</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-19">I logged every one of my tics for eighteen months.
+
+Shoulder jerk Monday. Head twitch Tuesday. Throat clear Wednesday. By month nine my family had spent fifty thousand dollars.
+
+The pattern only resolved once we tried the one thing none of those doctors had on their list.</div>
+                    <div class="see-more-btn" onclick="toggleText(19)">See more</div>
+                    <div class="post-image">
+                        <img src="images/listicle-049.png" alt="Ad 19">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">The One Thing Not on Their List</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-item">
+                <div class="draft-label">
+                    Ad 20 &middot; ID 119
+                    <span class="angle">Authority Listicle · Before/After</span>
+                </div>
+                <div class="fb-post">
+                    <div class="post-header">
+                        <div class="avatar">G</div>
+                        <div class="post-meta">
+                            <div class="page-name">Green Valley Nutrition <span class="verified">&#10003;</span></div>
+                            <div class="sponsored">Sponsored &middot; &#127760;</div>
+                        </div>
+                        <div class="more-btn">&middot;&middot;&middot;</div>
+                    </div>
+                    <div class="post-text collapsed" id="text-20">Same body. Six months apart. Fifty thousand dollars between the two photos.
+
+In between I tried everything the specialists wanted me to try, and my tics got worse.
+
+Then we tried one thing none of them had suggested.</div>
+                    <div class="see-more-btn" onclick="toggleText(20)">See more</div>
+                    <div class="post-image">
+                        <img src="images/authority-listicle-119.png" alt="Ad 20">
+                    </div>
+                    <div class="link-preview">
+                        <div class="domain">LEARN.GREENVALLEYNUTRITION.COM</div>
+                        <div class="title">What $50,000 of Doctors Missed</div>
+                        <div class="description">Hope for PANDAS families.</div>
+                    </div>
+                    <div class="cta-row">
+                        <div class="reactions">&#128077; &#10084;&#65039; 2.1K</div>
+                        <button class="cta-button">Learn More</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn" onclick="copyText(this)"><span class="icon">&#128203;</span> Copy Text</button>
+                        <button class="action-btn" onclick="downloadImage(this)"><span class="icon">&#11015;&#65039;</span> Download</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        function toggleText(id) {
+            const text = document.getElementById('text-' + id);
+            const btn = text.nextElementSibling;
+            if (text.classList.contains('collapsed')) {
+                text.classList.remove('collapsed'); text.classList.add('expanded'); btn.textContent = 'See less';
+            } else {
+                text.classList.remove('expanded'); text.classList.add('collapsed'); btn.textContent = 'See more';
+            }
+        }
+        function copyText(btn) {
+            const gridItem = btn.closest('.grid-item');
+            const text = gridItem.querySelector('.post-text').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied'); btn.innerHTML = '<span class="icon">&#10003;</span> Copied!';
+                showToast('Ad copy copied to clipboard');
+                setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '<span class="icon">&#128203;</span> Copy Text'; }, 2000);
+            });
+        }
+        function downloadImage(btn) {
+            const img = btn.closest('.grid-item').querySelector('.post-image img');
+            const imgSrc = img.getAttribute('src');
+            const draftLabel = btn.closest('.grid-item').querySelector('.draft-label').textContent;
+            const adNum = draftLabel.match(/Ad (\d+)/)?.[1] || '00';
+            const filename = 'gvn-pandas-ad-' + adNum.padStart(2, '0') + '.png';
+            fetch(imgSrc)
+                .then(res => res.blob())
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = filename;
+                    document.body.appendChild(a); a.click();
+                    document.body.removeChild(a); URL.revokeObjectURL(url);
+                    showToast('Downloaded ' + filename);
+                })
+                .catch(() => {
+                    window.open(imgSrc, '_blank');
+                    showToast('Download failed — opened in new tab');
+                });
+        }
+        function showToast(message) {
+            let toast = document.getElementById('toast');
+            if (!toast) { toast = document.createElement('div'); toast.id = 'toast'; toast.className = 'toast'; document.body.appendChild(toast); }
+            toast.textContent = message; toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2000);
+        }
+    </script>
+</body>
+</html>
