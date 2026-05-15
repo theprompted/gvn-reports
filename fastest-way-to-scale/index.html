@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GVN — The Fastest Way to Scale</title>
+<style>
+    :root {
+        --bg-page: #F8F8F7;
+        --bg-white: #ffffff;
+        --bg-blue: #EBF9FF;
+        --bg-purple: #F7F1FF;
+        --bg-yellow: #FFFDE7;
+        --bg-green: #E8F5E9;
+        --accent-teal: #53DBC9;
+        --accent-yellow: #FFDE00;
+        --accent-purple: #9D4EDD;
+        --accent-red: #E53935;
+        --text-black: #000000;
+        --text-dark: #1a1a1a;
+        --text-gray: #4a4a4a;
+        --text-muted: #6b6b6b;
+        --shadow-lg: -0.31rem 0.31rem 0 0 #383838;
+        --shadow-sm: -0.19rem 0.19rem 0 0 #383838;
+        --border: 2px solid black;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 1rem;
+        line-height: 1.7;
+        color: var(--text-dark);
+        background: var(--bg-page);
+        padding: 2rem 1.5rem;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    h1, h2, h3, h4 {
+        font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+        font-weight: 700;
+        color: var(--text-black);
+    }
+    h1 { font-size: 2.25rem; line-height: 1.2; }
+    h2 { font-size: 1.5rem; line-height: 1.3; }
+    h3 { font-size: 1.125rem; line-height: 1.3; }
+    h4 {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-gray);
+        margin-bottom: 0.5rem;
+    }
+
+    .card {
+        background: var(--bg-white);
+        border: var(--border);
+        box-shadow: var(--shadow-lg);
+        margin-bottom: 2rem;
+    }
+    .card-header {
+        padding: 1rem 1.5rem;
+        border-bottom: var(--border);
+        background: var(--bg-page);
+    }
+    .card-content { padding: 1.5rem; }
+
+    p { margin-bottom: 1rem; }
+    p:last-child { margin-bottom: 0; }
+
+    .lp-url {
+        font-family: ui-monospace, monospace;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        word-break: break-all;
+        padding: 0.5rem 0.75rem;
+        background: var(--bg-page);
+        border: 1px solid #d0d0d0;
+        margin-bottom: 1rem;
+    }
+    .lp-url::before {
+        content: "→ ";
+        color: var(--accent-teal);
+        font-weight: 700;
+    }
+    .lp-headline {
+        font-family: ui-monospace, monospace;
+        font-size: 0.95rem;
+        font-weight: 700;
+        background: var(--bg-yellow);
+        padding: 0.5rem 0.75rem;
+        margin: 0.75rem 0;
+        border-left: 3px solid var(--accent-yellow);
+    }
+
+    .lp-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    .lp-stat {
+        background: var(--bg-page);
+        border: 1px solid #d0d0d0;
+        padding: 0.4rem 0.7rem;
+        font-family: ui-monospace, monospace;
+        font-size: 0.75rem;
+    }
+    .lp-stat .lbl {
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-size: 0.65rem;
+        display: block;
+    }
+    .lp-stat .val {
+        font-weight: 700;
+        color: var(--text-black);
+        font-size: 0.9rem;
+    }
+
+    table.summary {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8125rem;
+        margin: 0.5rem 0;
+    }
+    table.summary th {
+        text-align: left;
+        padding: 0.5rem 0.4rem;
+        font-family: ui-monospace, monospace;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-gray);
+        border-bottom: var(--border);
+    }
+    table.summary th.r { text-align: right; }
+    table.summary td {
+        padding: 0.5rem 0.4rem;
+        border-bottom: 1px solid #e0e0e0;
+        vertical-align: top;
+    }
+    table.summary td.r { text-align: right; font-family: ui-monospace, monospace; }
+    table.summary td.name { font-weight: 600; }
+    table.summary tfoot td { font-weight: 700; border-top: var(--border); border-bottom: 0; padding-top: 0.6rem; }
+
+    .stat-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        font-family: ui-monospace, monospace;
+        font-size: 0.8125rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .stat-row strong { color: var(--text-black); font-weight: 700; }
+
+    .section {
+        margin-top: 1.25rem;
+    }
+    .section h4 { margin-bottom: 0.25rem; }
+
+    .funnel-pair {
+        background: var(--bg-blue);
+        border: 1px solid #b8d8e8;
+        padding: 0.75rem 1rem;
+        margin: 0.75rem 0;
+        font-size: 0.875rem;
+    }
+    .funnel-pair strong { font-family: ui-monospace, monospace; }
+
+    .summary-block {
+        background: var(--bg-page);
+        border: var(--border);
+        padding: 1rem 1.25rem;
+        margin: 0 0 1.25rem;
+        box-shadow: var(--shadow-sm);
+    }
+    .summary-block.anchor {
+        background: var(--bg-green);
+        border-color: var(--text-black);
+    }
+    .summary-block .avatar-line {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+    }
+    .summary-block .avatar-line .label {
+        font-family: ui-monospace, monospace;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-gray);
+        display: block;
+        margin-bottom: 0.25rem;
+        font-weight: 700;
+    }
+    .summary-block .metrics-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #d0d0d0;
+    }
+    .summary-block .metric {
+        background: var(--bg-white);
+        border: 1px solid #d0d0d0;
+        padding: 0.35rem 0.6rem;
+        font-family: ui-monospace, monospace;
+        font-size: 0.75rem;
+    }
+    .summary-block .metric .lbl {
+        display: block;
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+    }
+    .summary-block .metric .val {
+        font-weight: 700;
+        color: var(--text-black);
+        font-size: 0.85rem;
+    }
+    .summary-block .metric.roas-good .val { color: #2d8050; }
+    .summary-block .metric.roas-bad .val { color: var(--accent-red); }
+
+    .tag {
+        display: inline-block;
+        background: var(--accent-teal);
+        border: 1px solid black;
+        padding: 0.15rem 0.5rem;
+        font-family: ui-monospace, monospace;
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-right: 0.25rem;
+    }
+
+    .cta-button {
+        display: inline-block;
+        background: var(--accent-teal);
+        color: #000;
+        border: 2px solid #000;
+        padding: 0.85rem 1.5rem;
+        font-family: ui-monospace, monospace;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        box-shadow: -0.31rem 0.31rem 0 0 #000;
+        transition: transform 0.1s ease, box-shadow 0.1s ease;
+        margin-top: 0.5rem;
+    }
+    .cta-button:hover {
+        transform: translate(-0.15rem, 0.15rem);
+        box-shadow: -0.15rem 0.15rem 0 0 #000;
+    }
+    .cta-button:active {
+        transform: translate(-0.31rem, 0.31rem);
+        box-shadow: 0 0 0 0 #000;
+    }
+    .cta-button .arrow { margin-left: 0.5rem; }
+
+    .footer-note {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-align: center;
+        padding: 1rem 0;
+    }
+
+    @media (max-width: 600px) {
+        body { padding: 1rem; }
+        h1 { font-size: 1.5rem; }
+        h2 { font-size: 1.25rem; }
+        .card-content { padding: 1.25rem; }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="card">
+        <div class="card-content">
+            <h4>Green Valley Nutrition · 2026-05-15</h4>
+            <h1 style="margin-top: 0.5rem;">The fastest way to scale</h1>
+            <p style="color: var(--text-muted); margin-top: 0.75rem;">GVN has spent the last 30+ days running paid acquisition across multiple customer-acquisition funnels in parallel. That spend has already produced data — which audiences are converting, which pages are closing, which funnels are gaining traction. This report answers a single question: <strong>given everything the paid traffic has already taught us, what's the fastest, lowest-risk path to scale from here?</strong></p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h2>Methodology</h2></div>
+        <div class="card-content">
+            <p>The premise: GVN has already paid for the experiment. Every dollar of the last 30 days has produced signal — what converts, what doesn't, which audiences Meta's algorithm keeps serving, which it deprioritizes, which funnels have the LP architecture to close, which don't. The fastest scaling path is the one where the signal is already there and the infrastructure is already built — not the one that requires a new bet.</p>
+            <p>To find that path, the analysis worked from the landing pages backward — because the LP is where the customer actually converts, and the page's language, objection-handling, and offer structure reveal exactly who the brand believes the buyer is, plus how complete the funnel actually is.</p>
+            <p>Every active landing page in the GVN ad account was rendered live in a browser (so JavaScript-loaded content was captured), scrolled top-to-bottom, and the full visible text extracted. Each page was then read in full. The avatar inference comes from what the page itself reveals: who the headline addresses, what fears get disarmed early, what mechanism the page uses to build credibility, who shows up in the testimonials, and what the offer structure (price tiers, guarantee length, objection-handling sequence) signals about the buyer's likely caution level.</p>
+            <p>Spend, ad-count, purchase, and ROAS data pulled live from the Meta Marketing API across both GVN ad accounts (act_1401319770002379 main + act_172619599133100 personal). Window: Apr 14 – May 13, 2026. "Active" means the ad, ad set, and campaign are all currently status <code>ACTIVE</code>. 211 ads classified across 13 destination URLs.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h2>Findings — spend & performance by destination</h2></div>
+        <div class="card-content">
+            <p>211 active ads point at 13 distinct landing pages. Sorted by 30-day spend.</p>
+            <table class="summary">
+                <thead>
+                    <tr>
+                        <th>Destination LP</th>
+                        <th class="r">Ads</th>
+                        <th class="r">% Ads</th>
+                        <th class="r">Spend</th>
+                        <th class="r">% Spend</th>
+                        <th class="r">ROAS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="name">BOGO order form <span style="font-size:0.7rem; color:var(--text-muted);">(retargeting)</span></td><td class="r">46</td><td class="r">22%</td><td class="r">$5,413</td><td class="r">45%</td><td class="r">1.12x</td></tr>
+                    <tr><td class="name">Depleted / Adult Anxiety</td><td class="r">19</td><td class="r">9%</td><td class="r">$2,227</td><td class="r">18%</td><td class="r">0.67x</td></tr>
+                    <tr><td class="name">PANDAS advertorial</td><td class="r">32</td><td class="r">15%</td><td class="r">$1,984</td><td class="r">16%</td><td class="r">1.36x</td></tr>
+                    <tr><td class="name">ADHD-skeptical (live)</td><td class="r">20</td><td class="r">9%</td><td class="r">$1,186</td><td class="r">10%</td><td class="r">0.43x</td></tr>
+                    <tr><td class="name">Autism 10-Reasons</td><td class="r">14</td><td class="r">7%</td><td class="r">$817</td><td class="r">7%</td><td class="r">0.92x</td></tr>
+                    <tr><td class="name">Weight Loss</td><td class="r">10</td><td class="r">5%</td><td class="r">$291</td><td class="r">2%</td><td class="r">0.00x</td></tr>
+                    <tr><td class="name">Autism Co-Occurring</td><td class="r">7</td><td class="r">3%</td><td class="r">$45</td><td class="r">0%</td><td class="r">0.00x</td></tr>
+                    <tr><td class="name">Pain (live)</td><td class="r">18</td><td class="r">9%</td><td class="r">$37</td><td class="r">0%</td><td class="r">2.10x</td></tr>
+                    <tr><td class="name">Autism Sleep Crisis</td><td class="r">20</td><td class="r">9%</td><td class="r">$28</td><td class="r">0%</td><td class="r">0.00x</td></tr>
+                    <tr><td class="name">ADHD-skeptical (old dupe)</td><td class="r">11</td><td class="r">5%</td><td class="r">$21</td><td class="r">0%</td><td class="r">0.00x</td></tr>
+                    <tr><td class="name">Kid Sleep</td><td class="r">9</td><td class="r">4%</td><td class="r">$10</td><td class="r">0%</td><td class="r">0.00x</td></tr>
+                    <tr><td class="name">Pain (old variant)</td><td class="r">4</td><td class="r">2%</td><td class="r">$9</td><td class="r">0%</td><td class="r">0.00x</td></tr>
+                    <tr><td class="name">Pain (older variant)</td><td class="r">1</td><td class="r">0%</td><td class="r">$0</td><td class="r">0%</td><td class="r">—</td></tr>
+                </tbody>
+                <tfoot>
+                    <tr><td>Total</td><td class="r">211</td><td class="r">100%</td><td class="r">$12,069</td><td class="r">100%</td><td class="r">—</td></tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h2>Findings — landing-page-by-landing-page</h2></div>
+        <div class="card-content">
+            <p>Each LP below: the avatar inferred from the page's own language, the funnel architecture, the 30-day performance numbers, and a walkthrough of what the page actually says. Pages are ordered by 30-day spend (largest to smallest).</p>
+        </div>
+    </div>
+
+    <!-- BOGO order form — 1st by spend -->
+    <div class="card">
+        <div class="card-header"><h2>BOGO order form</h2></div>
+        <div class="card-content">
+            <div class="summary-block">
+                <div class="avatar-line">
+                    <span class="label">Avatar</span>
+                    Mixed by design. Either a returning GVN customer triggered by the BOGO to restock, OR a cold prospect getting served the sitewide deal because Meta's algorithm thinks the discount will close them. The page treats both identically — menu, discount, social proof, founder story tucked in.
+                </div>
+                <div class="metrics-line">
+                    <div class="metric"><span class="lbl">Ads</span><span class="val">46</span></div>
+                    <div class="metric"><span class="lbl">% Ads</span><span class="val">22%</span></div>
+                    <div class="metric"><span class="lbl">Spend</span><span class="val">$5,413</span></div>
+                    <div class="metric"><span class="lbl">% Spend</span><span class="val">45%</span></div>
+                    <div class="metric"><span class="lbl">Purch</span><span class="val">69</span></div>
+                    <div class="metric"><span class="lbl">ROAS</span><span class="val">1.12x</span></div>
+                </div>
+            </div>
+            <div class="funnel-pair">
+                <strong>Funnel structure:</strong> Single-page direct-to-checkout product menu. No advertorial layer. Hybrid traffic — retargeting + customer-list + cold prospects, indistinguishable to the page.<br>
+                <strong>URL:</strong> <code>go.greenvalleynutrition.com/order-form-page</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- Depleted — 2nd by spend -->
+    <div class="card">
+        <div class="card-header"><h2>Depleted / Adult anxiety funnel</h2></div>
+        <div class="card-content">
+            <div class="summary-block">
+                <div class="avatar-line">
+                    <span class="label">Avatar</span>
+                    Female professional, late 20s to mid-40s. Calm subscription, Headspace login, breathwork videos, journaling — has invested heavily in wellness and none of it sticks. Quietly suspects "something deeper is wrong" and converts on a credible scientific explanation, not a hopeful pitch.
+                </div>
+                <div class="metrics-line">
+                    <div class="metric"><span class="lbl">Ads</span><span class="val">19</span></div>
+                    <div class="metric"><span class="lbl">% Ads</span><span class="val">9%</span></div>
+                    <div class="metric"><span class="lbl">Spend</span><span class="val">$2,227</span></div>
+                    <div class="metric"><span class="lbl">% Spend</span><span class="val">18%</span></div>
+                    <div class="metric"><span class="lbl">Purch</span><span class="val">13</span></div>
+                    <div class="metric"><span class="lbl">ROAS</span><span class="val">0.67x</span></div>
+                </div>
+            </div>
+            <div class="funnel-pair">
+                <strong>Funnel structure:</strong> Two-page (Advertorial → Offer). Brand is GVN on both pages — no white-labeling. 60-day guarantee. Mechanism: anandamide depletion + FAAH enzyme.<br>
+                <strong>URLs:</strong> <code>learn.greenvalleynutrition.com/5-reasons---education-page-page-7823</code> → <code>learn.greenvalleynutrition.com/offer-page-9041</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANDAS — 3rd by spend -->
+    <div class="card">
+        <div class="card-header"><h2>PANDAS funnel</h2></div>
+        <div class="card-content">
+            <div class="summary-block">
+                <div class="avatar-line">
+                    <span class="label">Avatar</span>
+                    A cautious, deliberative mom of a child whose behavior shifted suddenly post-strep. She's already been dismissed by at least one pediatrician, has spent money on failed therapies, and trusts other PANDAS moms more than her own doctors. Buys only because <em>nothing else has worked</em>.
+                </div>
+                <div class="metrics-line">
+                    <div class="metric"><span class="lbl">Ads</span><span class="val">32</span></div>
+                    <div class="metric"><span class="lbl">% Ads</span><span class="val">15%</span></div>
+                    <div class="metric"><span class="lbl">Spend</span><span class="val">$1,984</span></div>
+                    <div class="metric"><span class="lbl">% Spend</span><span class="val">16%</span></div>
+                    <div class="metric"><span class="lbl">Purch</span><span class="val">21</span></div>
+                    <div class="metric"><span class="lbl">ROAS</span><span class="val">1.36x</span></div>
+                </div>
+            </div>
+            <div class="funnel-pair">
+                <strong>Funnel structure:</strong> Two-page (Advertorial → Offer). Advertorial is white-labeled as "NEURODIVERGENCE INSTITUTE"; offer page reveals it's GVN. <strong>365-day guarantee</strong> — longest in the account. Offer: BOGO at $69.99 (BOGOKIDS).<br>
+                <strong>URLs:</strong> <code>learn.greenvalleynutrition.com/hope-for-pandas-families-940873</code> → <code>learn.greenvalleynutrition.com/try-cbd-oil-for-kids-100-risk-free-941200</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADHD FUNNEL -->
+    <div class="card">
+        <div class="card-header"><h2>ADHD-medication-skeptical funnel</h2></div>
+        <div class="card-content">
+            <div class="summary-block">
+                <div class="avatar-line">
+                    <span class="label">Avatar</span>
+                    Parent whose pediatrician just used the words "Concerta" or "Adderall." Self-identifies as "natural-minded" — filters BPA, reads ingredients, vaccinates but cautiously. Stuck between medicate-and-worry vs. do-nothing. The page's job isn't to sell — it's to grant permission to delay the decision and keep looking.
+                </div>
+                <div class="metrics-line">
+                    <div class="metric"><span class="lbl">Ads (live)</span><span class="val">20</span></div>
+                    <div class="metric"><span class="lbl">% Ads</span><span class="val">9%</span></div>
+                    <div class="metric"><span class="lbl">Spend</span><span class="val">$1,186</span></div>
+                    <div class="metric"><span class="lbl">% Spend</span><span class="val">10%</span></div>
+                    <div class="metric"><span class="lbl">Purch</span><span class="val">7</span></div>
+                    <div class="metric"><span class="lbl">ROAS</span><span class="val">0.43x</span></div>
+                </div>
+            </div>
+            <div class="funnel-pair">
+                <strong>Funnel structure:</strong> Multi-page ("7 questions" advertorial → next page). Advertorial white-labeled as "NEURODIVERGENCE INSTITUTE" — same shell as PANDAS. 11 additional ads point at an older variant on the health.* subdomain ($21 combined).<br>
+                <strong>URL:</strong> <code>learn.greenvalleynutrition.com/why-natural-minded-parents-avoid-adhd-medication615972-2036</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTISM 10-REASONS FUNNEL -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Autism — "10 Reasons" funnel</h2>
+        </div>
+        <div class="card-content">
+            <div class="summary-block">
+                <div class="avatar-line">
+                    <span class="label">Avatar</span>
+                    Parent of an autistic child who has internalized neurodiversity discourse and rejects "fix your kid" framing. The phrase <em>"without changing who they are"</em> is the tell. Not in crisis — in long-term, day-to-day support-finding mode.
+                </div>
+                <div class="metrics-line">
+                    <div class="metric"><span class="lbl">Ads</span><span class="val">14</span></div>
+                    <div class="metric"><span class="lbl">% Ads</span><span class="val">7%</span></div>
+                    <div class="metric"><span class="lbl">Spend</span><span class="val">$817</span></div>
+                    <div class="metric"><span class="lbl">% Spend</span><span class="val">7%</span></div>
+                    <div class="metric"><span class="lbl">Purch</span><span class="val">9</span></div>
+                    <div class="metric roas-bad"><span class="lbl">ROAS</span><span class="val">0.92x</span></div>
+                </div>
+            </div>
+
+            <div class="funnel-pair">
+                <strong>Funnel structure:</strong> Single-page (advertorial closes with the BOGO offer directly — no separate offer page). Offer: BOGO at $69.99, 60-day guarantee. Anti-sedation framing: "No fog. No zoning out. Just calm."<br>
+                <strong>URL:</strong> <code>learn.greenvalleynutrition.com/10-reasons-why-hemp-oil-is-the-best-safest-therapy-for-kids-1</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- WEIGHT LOSS FUNNEL -->
+    <div class="card">
+        <div class="card-header"><h2>Weight loss / night-eating funnel</h2></div>
+        <div class="card-content">
+            <div class="summary-block">
+                <div class="avatar-line">
+                    <span class="label">Avatar</span>
+                    Woman 35-55 cutting calories for weeks with the scale not moving. Most nights at 9pm she's at the kitchen counter, not hungry, just <em>there</em>. Has tried keto, IF, calorie counting, appetite suppressants — all failed. One of the most skeptical avatars in the account.
+                </div>
+                <div class="metrics-line">
+                    <div class="metric"><span class="lbl">Ads</span><span class="val">10</span></div>
+                    <div class="metric"><span class="lbl">% Ads</span><span class="val">5%</span></div>
+                    <div class="metric"><span class="lbl">Spend</span><span class="val">$291</span></div>
+                    <div class="metric"><span class="lbl">% Spend</span><span class="val">2%</span></div>
+                    <div class="metric"><span class="lbl">Purch</span><span class="val">0</span></div>
+                    <div class="metric"><span class="lbl">ROAS</span><span class="val">0.00x</span></div>
+                </div>
+            </div>
+            <div class="funnel-pair">
+                <strong>Funnel structure:</strong> Two-page (advertorial → offer). Offer page <em>refuses</em> to claim weight loss — sells stress instead, lets appetite effect appear as a customer-discovered bonus. <strong>365-day guarantee</strong>. Same 1000mg CBD Oil Drops as Depleted funnel.<br>
+                <strong>URLs:</strong> <code>learn.greenvalleynutrition.com/5-reasons-eating-less-is-making-you-gain-weight-page</code> → <code>learn.greenvalleynutrition.com/solution-reveal--bogo-bundle-stack</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTISM CO-OCCURRING -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Autism — co-occurring conditions funnel</h2>
+        </div>
+        <div class="card-content">
+            <div class="summary-block">
+                <div class="avatar-line">
+                    <span class="label">Avatar</span>
+                    Autism parent 5+ years into the journey. Fluent in clinical language ("co-regulation," "sensory profile"), past the diagnosis-shock phase. Manages a chronic, layered situation and is looking for one more tool that fits her existing scaffold — not a miracle.
+                </div>
+                <div class="metrics-line">
+                    <div class="metric"><span class="lbl">Ads</span><span class="val">7</span></div>
+                    <div class="metric"><span class="lbl">% Ads</span><span class="val">3%</span></div>
+                    <div class="metric"><span class="lbl">Spend</span><span class="val">$45</span></div>
+                    <div class="metric"><span class="lbl">% Spend</span><span class="val">0%</span></div>
+                    <div class="metric"><span class="lbl">Purch</span><span class="val">0</span></div>
+                    <div class="metric roas-bad"><span class="lbl">ROAS</span><span class="val">0.00x</span></div>
+                </div>
+            </div>
+
+            <div class="funnel-pair">
+                <strong>Funnel structure:</strong> Multi-page (advertorial → follow-up page). Lives on health.* subdomain, not learn.*. Effectively dormant — Meta has zeroed out spend.<br>
+                <strong>URL:</strong> <code>health.greenvalleynutrition.com/autism-co-occurring-conditions-490095</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAIN FUNNEL -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Pain / recovery funnel</h2>
+        </div>
+        <div class="card-content">
+            <div class="summary-block">
+                <div class="avatar-line">
+                    <span class="label">Avatar</span>
+                    Adult 45+ with persistent pain (back, joints, post-injury, post-surgery). Has tried PT, cortisone, OTC meds. Already decided against pharmaceutical pain management as a primary approach — now looking for credible alternatives. Least specific avatar in the account.
+                </div>
+                <div class="metrics-line">
+                    <div class="metric"><span class="lbl">Ads (live)</span><span class="val">18</span></div>
+                    <div class="metric"><span class="lbl">% Ads</span><span class="val">9%</span></div>
+                    <div class="metric"><span class="lbl">Spend</span><span class="val">$37</span></div>
+                    <div class="metric"><span class="lbl">% Spend</span><span class="val">0%</span></div>
+                    <div class="metric"><span class="lbl">Purch</span><span class="val">2</span></div>
+                    <div class="metric"><span class="lbl">ROAS</span><span class="val">2.10x*</span></div>
+                </div>
+            </div>
+
+            <div class="funnel-pair">
+                <strong>Funnel structure:</strong> Multi-page ("5 things" advertorial → next page). Lives on health.* subdomain. <strong>2.10x ROAS is from only $37 of spend and 2 purchases</strong> — too small a sample to draw conclusions from. 5 additional ads point at two URL variants ($9 combined).<br>
+                <strong>URL:</strong> <code>health.greenvalleynutrition.com/5-things-no-one-tells-you-about-healing-faster288344-2989</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTISM SLEEP CRISIS FUNNEL -->
+    <div class="card">
+        <div class="card-header"><h2>Autism — sleep crisis funnel</h2></div>
+        <div class="card-content">
+            <div class="summary-block">
+                <div class="avatar-line">
+                    <span class="label">Avatar</span>
+                    An autism parent in acute sleep deprivation. 3:47 AM, kid is awake again, 847 nights tracked. Tried melatonin (stopped working), weighted blankets, sleep training. Reads in survival mode, not research mode — the page wins by recognizing her exact life in the opening paragraph.
+                </div>
+                <div class="metrics-line">
+                    <div class="metric"><span class="lbl">Ads</span><span class="val">20</span></div>
+                    <div class="metric"><span class="lbl">% Ads</span><span class="val">9%</span></div>
+                    <div class="metric"><span class="lbl">Spend</span><span class="val">$28</span></div>
+                    <div class="metric"><span class="lbl">% Spend</span><span class="val">0%</span></div>
+                    <div class="metric"><span class="lbl">Purch</span><span class="val">0</span></div>
+                    <div class="metric"><span class="lbl">ROAS</span><span class="val">0.00x</span></div>
+                </div>
+            </div>
+            <div class="funnel-pair">
+                <strong>Funnel structure:</strong> Multi-page ("847 Nights" advertorial → "Laura's full story" → offer). Meta has throttled this funnel to near-zero spend — 20 active ads but $28 total. The funnel exists; the audience is being deprioritized by the algorithm.<br>
+                <strong>URL:</strong> <code>learn.greenvalleynutrition.com/autism-breakthrough-v2-page-6044-1948</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- KID SLEEP FUNNEL -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Kid sleep funnel (non-autism)</h2>
+        </div>
+        <div class="card-content">
+            <div class="summary-block">
+                <div class="avatar-line">
+                    <span class="label">Avatar</span>
+                    Parent of a neurotypical kid (no diagnosis) who can't fall asleep. Has been giving melatonin for months and watching the dose creep up. Kid is fine during the day — this is purely a bedtime/morning problem, and parent's pain is mostly her own sleep deprivation.
+                </div>
+                <div class="metrics-line">
+                    <div class="metric"><span class="lbl">Ads</span><span class="val">9</span></div>
+                    <div class="metric"><span class="lbl">% Ads</span><span class="val">4%</span></div>
+                    <div class="metric"><span class="lbl">Spend</span><span class="val">$10</span></div>
+                    <div class="metric"><span class="lbl">% Spend</span><span class="val">0%</span></div>
+                    <div class="metric"><span class="lbl">Purch</span><span class="val">0</span></div>
+                    <div class="metric roas-bad"><span class="lbl">ROAS</span><span class="val">0.00x</span></div>
+                </div>
+            </div>
+
+            <div class="funnel-pair">
+                <strong>Funnel structure:</strong> Multi-page ("5 reasons" advertorial → next page). Effectively unfunded — angle is sharp (melatonin tolerance arc) but campaign has $10 of spend total. Smallest avatar by spend in the account.<br>
+                <strong>URL:</strong> <code>learn.greenvalleynutrition.com/page-1---education-page</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- SYNTHESIS -->
+    <div class="card">
+        <div class="card-header"><h2>Synthesis — the fastest path to scale</h2></div>
+        <div class="card-content">
+            <p>The right question isn't "which avatar should we build a funnel for?" — that's the slow, expensive path. The right question is: "given that we've already paid to run 9 funnels for the last 30+ days, which one is the data telling us is closest to ready, and what's the lowest-risk way to scale it?"</p>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem;">What the paid data already tells us</h3>
+
+            <p>The account has been running an experiment for the last 30+ days — paid budget across 9 distinct cold-acquisition avatars, plus retargeting. Each funnel has its own LP, mechanism story, and offer structure, and each has produced its own signal. The advertorials and offer pages already exist as real assets that took meaningful time and creative effort to build. The question now is which of those assets has produced the clearest "ready to scale" signal — where the audience is converting, the LP is closing, and the next dollar of investment compounds rather than starts from zero.</p>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem;">Why concentration is the unlock</h3>
+
+            <p>The deeper the <strong>quiver of arrows</strong> aimed at one avatar, the faster that avatar scales. Each ad is an arrow. The more distinct angles, hooks, and emotional entry points you have aimed at the same person, the more chances you have to land the conversion. That's the lever — not the LP, not the offer, not the audience. The creative inventory itself.</p>
+
+            <p>Concentrating effort on one avatar is how the quiver gets deep enough to compound. The path to scale is more ads for the same person.</p>
+
+            <h3 style="margin-top: 1.75rem; margin-bottom: 0.75rem;">The fastest path to scale: PANDAS</h3>
+
+            <p>The data already paid for points at PANDAS as the lowest-risk lever — not because it's a hopeful bet, but because <em>the experiment has already run</em> and produced a winning configuration on every dimension that matters for scale-up:</p>
+
+            <ul>
+                <li><strong>The audience is already validated by paid traffic.</strong> 1.36x ROAS on $1,984 over 30 days — the only cold-acquisition funnel above first-order break-even at meaningful spend. Meta has identified the audience, and they're converting. Scaling is putting more behind a result that's already happening.</li>
+                <li><strong>The funnel infrastructure is already built.</strong> Two-page architecture (advertorial → offer), strong objection-handling on both, 365-day guarantee. The next dollar of investment goes into amplifying a working funnel, not building one. Compare to Kid Sleep, Autism Sleep Crisis, or Weight Loss — sharp angles, no proven offer page, no proven LP architecture. To scale those, you'd be building from a much earlier stage.</li>
+                <li><strong>The credibility shell is already paid for.</strong> "NEURODIVERGENCE INSTITUTE" white-labeling is calibrated to a parent who distrusts supplement marketing. Building that brand-laundering layer from scratch for any other avatar is weeks of work. PANDAS has it.</li>
+                <li><strong>The competitive moat is unreplicable.</strong> Ethan had PANDAS as a kid. The $50K-spent-on-failed-therapies story is documented, not invented. Spending more here deepens an advantage no competitor in kids-CBD can match. Spending more on Depleted or Weight Loss puts GVN in a category with hundreds of competitors making identical mechanism claims.</li>
+                <li><strong>The audience compounds organically.</strong> PANDAS Network groups, PANS/PANDAS specialist communities, parent Facebook groups — small but tight-knit. A buyer here recommends the product to other PANDAS moms in a way an "anxious adult" buyer doesn't recommend it to other anxious adults. Word-of-mouth ROI compounds in ways the larger "Depleted" or "Weight Loss" audiences won't.</li>
+            </ul>
+
+            <p style="margin-top: 1.25rem;">The other funnels are real assets that took real work to build, and they'll be there to return to. But none of them currently shows the same alignment of signals PANDAS does, and concentrating effort on one funnel where the experiment has already produced a winning configuration is the lowest-risk, fastest path to scale. <strong>The experiment has been paid for. PANDAS is what the data points at.</strong></p>
+        </div>
+    </div>
+
+    <!-- TAM section -->
+    <div class="card">
+        <div class="card-header"><h2>Is the market big enough to scale?</h2></div>
+        <div class="card-content">
+            <p>The natural objection to concentrating on PANDAS: isn't that audience too small? The answer depends on how the funnel is read — and the math comes out comfortable once you look at the actual numbers.</p>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem;">The funnel isn't strict-PANDAS-only</h3>
+
+            <p>The advertorial does not require a confirmed PANDAS diagnosis to convert. It speaks to "my child changed suddenly," "tics appeared overnight," "doctors dismissed me," "I've tried everything." Strict PANDAS itself is genuinely rare — <a href="https://www.frontiersin.org/journals/pediatrics/articles/10.3389/fped.2023.1170379/full" target="_blank" style="color: var(--text-dark); text-decoration: underline;">peer-reviewed US incidence</a> is ~6,200 new diagnoses per year, and NIMH calls overall prevalence "<a href="https://www.nimh.nih.gov/health/publications/pandas" target="_blank" style="color: var(--text-dark); text-decoration: underline;">rare and unknown</a>." But Ethan's story and the funnel's framing speak to a much broader pool: parents of kids with tics, sudden behavioral changes, childhood OCD, and pediatrician-dismissed neuropsychiatric symptoms.</p>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem;">The addressable parent pool</h3>
+
+            <p>US parents whose kid has the problem the funnel speaks to:</p>
+
+            <ul style="margin: 0.75rem 0 0.75rem 1.5rem;">
+                <li><strong>Chronic tic disorders &amp; Tourette syndrome:</strong> ~730K–2.2M US children (1–3% of children). <a href="https://www.cdc.gov/tourette-syndrome/data/index.html" target="_blank" style="color: var(--text-dark); text-decoration: underline;">CDC</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4243175/" target="_blank" style="color: var(--text-dark); text-decoration: underline;">Knight 2012 meta-analysis</a></li>
+                <li><strong>Childhood OCD:</strong> ~365K–1.7M US children (0.5–2.3%). <a href="https://www.nimh.nih.gov/health/topics/obsessive-compulsive-disorder-ocd" target="_blank" style="color: var(--text-dark); text-decoration: underline;">NIMH</a></li>
+                <li><strong>Provisional / transient tics in school-age children:</strong> 5–20% will experience tics at some point — millions of kids whose parents have seen the "sudden onset" moment Ethan describes.</li>
+            </ul>
+
+            <p>De-duplicated for the overlap between OCD and tic disorders (~30% comorbidity), the parent pool comes out to:</p>
+
+            <ul style="margin: 0.75rem 0 0.75rem 1.5rem;">
+                <li><strong>Conservative read:</strong> ~1.5 million US parents — counting only chronic tic disorders + low-end OCD.</li>
+                <li><strong>Central read:</strong> ~5 million US parents — central prevalence estimates plus half of school-age kids currently experiencing provisional tics.</li>
+            </ul>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem;">What it takes to hit 50 orders/day</h3>
+
+            <p>50 orders/day × 365 days = ~18,250 orders per year. Assuming a normal mix of one-time and Subscribe-and-Save repeat purchases (35–50% repeat for a daily-use kids supplement), new customers needed are between 9,000 and 18,000 per year.</p>
+
+            <table class="summary" style="margin-top: 1rem;">
+                <thead>
+                    <tr>
+                        <th>Parent pool</th>
+                        <th class="r">No repeats</th>
+                        <th class="r">35% repeats</th>
+                        <th class="r">50% repeats</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="name">Conservative (1.5M)</td><td class="r">1.2%</td><td class="r">0.8%</td><td class="r">0.6%</td></tr>
+                    <tr><td class="name">Central (5M)</td><td class="r">0.4%</td><td class="r">0.2%</td><td class="r">0.2%</td></tr>
+                </tbody>
+            </table>
+
+            <p style="margin-top: 1rem;"><strong>The conversion rate required to hit 50 orders/day sits between 0.2% and 1.2% of the addressable parent pool over a full year.</strong> Even at the most conservative read — smallest plausible market, zero repeat customers — it's 1.2%. At the central read with normal repeat behavior, it's 0.2–0.3%. For a well-targeted DTC funnel converting on a real, painful problem, capturing that small a sliver of an audience over a year is comfortably within reach.</p>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem;">What 50 orders/day looks like in revenue</h3>
+
+            <p>The actual AOV from BOGOKIDS-coded orders pulled from Shopify during the 30-day audit was <strong>$80.15</strong> (18 orders / $1,442.67) — most orders are the single BOGO at $69.99 with some lift from add-on products and 3-packs. Using that as the central estimate plus a range for AOV variance:</p>
+
+            <table class="summary" style="margin-top: 1rem;">
+                <thead>
+                    <tr>
+                        <th>Scenario</th>
+                        <th class="r">AOV</th>
+                        <th class="r">Monthly revenue</th>
+                        <th class="r">Annual revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td class="name">Conservative (single BOGO dominant)</td><td class="r">$75</td><td class="r">$112,500</td><td class="r">$1.37M</td></tr>
+                    <tr><td class="name">Central (verified Shopify AOV)</td><td class="r">$80</td><td class="r">$120,000</td><td class="r">$1.46M</td></tr>
+                    <tr><td class="name">Optimistic (stronger bundle/upsell mix)</td><td class="r">$100</td><td class="r">$150,000</td><td class="r">$1.83M</td></tr>
+                </tbody>
+            </table>
+
+            <p style="margin-top: 1rem;">At the central read — based on actual order data from this funnel — 50 orders/day produces <strong>~$120K/month and ~$1.46M/year</strong> in revenue. That's before factoring in subscription LTV, retargeting revenue from the BOGO sitewide page (which gets fed by these new buyers), or any future upsell improvements.</p>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem;">The honest read</h3>
+
+            <p>The PANDAS market doesn't have a size problem. The bottleneck is reaching the audience efficiently via Meta and giving the creative the volume needed to compound — both of which are work the brand can do. The TAM math works at the conservative end and is comfortable at the central end.</p>
+        </div>
+    </div>
+
+    <!-- WHERE THIS GOES NEXT -->
+    <div class="card">
+        <div class="card-header"><h2>Where this goes next — playing this story for everything it's worth</h2></div>
+        <div class="card-content">
+            <p>The reason this funnel is worth investing more time and energy into isn't the offer or the LP architecture — it's the <strong>story underneath it</strong>. A real adult, who really had PANDAS as a teenager, whose family really spent $50,000 trying to fix his motor tics, who really found the thing that worked. That kind of source material is the hardest thing in DTC to come by. Most brands have to manufacture it. This brand has the real artifact.</p>
+
+            <p>The mistake would be treating the current funnel as the final form of how that story gets used. The current funnel is one expression of it. There's a much bigger surface area available — and going deeper on it is where the compounding happens. Two parallel directions to play:</p>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem;">Direction 1 — More creative assets supporting the current funnel</h3>
+
+            <p>The funnel works. What it needs is volume of creative pointing at it. The <strong>quiver of arrows</strong> idea from the synthesis above: 20 distinct ads beats 1 ad with 20× the budget. Each ad is an angle that catches a different person on a different day in a different mood. The funnel doesn't change. The doors into it multiply.</p>
+
+            <p>A first batch of 20 sample ads has already been generated as a working demonstration — all native-image, all survivor-voice, each one a different format walking into the same locked headline:</p>
+
+            <p style="margin-top: 1.25rem; margin-bottom: 0.5rem;"><a href="https://theprompted.github.io/gvn-reports/pandas-tics-samples/" target="_blank" class="cta-button">View the 20 sample ads <span class="arrow">→</span></a></p>
+
+            <p style="margin-top: 1rem;">These aren't the finished work — they're a proof of the production model. A team can produce dozens more like them per week, each varying the visual format, the framing, and the emotional door — all rooted in the same true confession. The headline on the image is a single, consistent anchor; the lead-in changes around it.</p>
+
+            <h3 style="margin-top: 1.75rem; margin-bottom: 0.75rem;">Direction 2 — Sibling funnels for the same avatar, different angles on the same story</h3>
+
+            <p>The current funnel hinges on a specific lead-in: the financial weight of $50,000 in failed treatments. That's one valid door into the survivor's story — but it's not the only one. The same arc can be expressed through different headlines, each pulling a different lever out of the same true source material. None of these require a new story. They require a new <em>door</em> into the existing one.</p>
+
+            <p>A few examples of what that looks like, all rooted in the same survivor and the same arc:</p>
+
+            <ul>
+                <li><strong>The "tried everything" lead-in.</strong> <em>"I tried fish oil. I tried magnesium. I tried two SSRIs and a behavioral therapist. None of them stopped my motor tics. This finally did."</em> Same survivor. Same PANDAS arc. Different door. Catches the parent who's been working a checklist of natural-first solutions for their child's tics and is running out of items.</li>
+                <li><strong>The "wrong diagnosis" lead-in.</strong> <em>"For two years, four doctors told me my motor tics were Tourette's. They were wrong. It was PANDAS — and once we treated it as PANDAS, the tics finally stopped."</em> Catches the parent whose child has been diagnosed with Tourette's and is starting to suspect the label doesn't fit.</li>
+                <li><strong>The "40 medications" lead-in.</strong> <em>"By the time I was seventeen I'd been on more than forty medications for my motor tics. None of them worked. One thing finally did — and no neurologist had ever mentioned it."</em> A real detail from the LP — catches the pharma-skeptical parent watching their child cycle through prescriptions for tics that don't slow down.</li>
+                <li><strong>The "negative strep test" lead-in.</strong> <em>"My strep swab came back negative. It still took us fourteen more months to figure out PANDAS was driving my motor tics the whole time."</em> Catches the parent who's been told a negative test rules out PANDAS — when in fact most pediatricians miss it.</li>
+                <li><strong>The "single moment" lead-in.</strong> <em>"I remember the Tuesday afternoon my shoulder first jerked. I was fourteen. Nobody told me for three years that what I had was PANDAS, and that motor tics like mine had a name and a fix."</em> Catches the parent in the first weeks of sudden-onset tics, looking for someone who's been through exactly what they're watching.</li>
+            </ul>
+
+            <p style="margin-top: 1.25rem;">Each lead-in implies its own advertorial, its own image set, its own ad concepts — but all of them lead the reader to the same destination: the survivor's confession, the failed-treatment arc, and the one thing that worked. The buyer doesn't change. The arc doesn't change. The door changes.</p>
+
+            <p>This is the <em>opposite</em> of building more funnels for more avatars. It's building <strong>more funnels for the same avatar</strong>, each catching them in a different state of awareness. Most brands can't do this because their underlying story isn't true or rare enough to support multiple angles without contradicting itself. This brand's story has that capacity, and most of it is unused.</p>
+
+            <h3 style="margin-top: 1.75rem; margin-bottom: 0.75rem;">The thing worth not overlooking</h3>
+
+            <p>The temptation, when a funnel is doing 1.36x ROAS at modest spend, is to read it as a small result and move on to another avatar. The opposite read is the right one: this is the only cold-acquisition funnel in the entire account above first-order break-even, and the source material under it — a real survivor, a real $50K spend, a real recovery — is the hardest asset in DTC to replicate. The downside of going deep here is bounded. The upside is a category that few competitors can ever compete with on the same terms.</p>
+
+            <p>The recommendation isn't to abandon the other funnels. It's to recognize that the magic is in this story, this avatar, this niche — and to stop treating one funnel as the full expression of it. There is room here for ten advertorials, dozens of ad concepts, and a year of compounding work, all hinging on a story the brand already has and most competitors will never get.</p>
+        </div>
+    </div>
+
+
+</div>
+
+</body>
+</html>
