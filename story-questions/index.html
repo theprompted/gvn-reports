@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Ethan — Some Questions</title>
+    <style>
+        /* PromptedOS Design System */
+        :root {
+            --bg-page: #F8F8F7;
+            --bg-white: #ffffff;
+            --bg-blue: #EBF9FF;
+            --bg-purple: #F7F1FF;
+            --bg-yellow: #FFFDE7;
+            --bg-green: #E8F5E9;
+            --accent-teal: #53DBC9;
+            --accent-yellow: #FFDE00;
+            --accent-purple: #9D4EDD;
+            --accent-red: #E53935;
+            --text-black: #000000;
+            --text-dark: #1a1a1a;
+            --text-gray: #4a4a4a;
+            --text-muted: #6b6b6b;
+            --shadow-lg: -0.31rem 0.31rem 0 0 #383838;
+            --shadow-sm: -0.19rem 0.19rem 0 0 #383838;
+            --border: 2px solid black;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-dark);
+            background: var(--bg-page);
+            padding: 2rem 1.5rem 6rem;
+        }
+
+        .container { max-width: 760px; margin: 0 auto; }
+
+        h1, h2, h3, h4 {
+            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+            font-weight: 700;
+            color: var(--text-black);
+        }
+
+        h1 { font-size: 2.25rem; line-height: 1.15; }
+        h2 { font-size: 1.5rem; }
+        h3 { font-size: 1.125rem; }
+        h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-gray);
+        }
+
+        .card {
+            background: var(--bg-white);
+            border: var(--border);
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+        }
+
+        .card-content { padding: 1.75rem 2rem; }
+
+        @media (max-width: 600px) {
+            .card-content { padding: 1.5rem 1.5rem; }
+        }
+
+        /* HEADER CARD */
+        .header-card .icon {
+            width: 3rem; height: 3rem;
+            background: var(--accent-teal);
+            border: var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-family: ui-monospace, monospace;
+            font-size: 1.4rem; font-weight: 800;
+            margin-bottom: 1.25rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .header-card h1 { margin-bottom: 0.4rem; }
+        .header-card .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-family: ui-monospace, monospace;
+        }
+
+        /* INTRO TEXT */
+        .intro p {
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+            font-size: 1.05rem;
+        }
+        .intro p:last-child { margin-bottom: 0; }
+        .intro p strong { color: var(--text-black); }
+        .intro p em { font-style: italic; }
+
+        /* HOW-TO CARD — yellow tint, friendly */
+        .how-card {
+            background: var(--bg-yellow);
+            border: var(--border);
+            box-shadow: var(--shadow-sm);
+            padding: 1.5rem 1.75rem;
+            margin: 1.5rem 0 2rem;
+        }
+        .how-card h4 { margin-bottom: 0.75rem; }
+        .how-card p {
+            margin-bottom: 0.75rem;
+            font-size: 0.98rem;
+            color: var(--text-dark);
+        }
+        .how-card p:last-child { margin-bottom: 0; }
+        .how-card strong { color: var(--text-black); }
+        .how-list {
+            list-style: none;
+            padding: 0;
+            margin: 0.5rem 0 0.75rem;
+        }
+        .how-list li {
+            position: relative;
+            padding: 0.4rem 0 0.4rem 1.5rem;
+            font-size: 0.98rem;
+            margin: 0;
+        }
+        .how-list li::before {
+            content: "›";
+            position: absolute;
+            left: 0; top: 0.3rem;
+            color: var(--text-black);
+            font-family: ui-monospace, monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .how-list li strong { color: var(--text-black); }
+
+        /* CARLTON STORY CARD — purple tint */
+        .story-card {
+            background: var(--bg-purple);
+            border: var(--border);
+            box-shadow: var(--shadow-sm);
+            padding: 1.5rem 1.75rem;
+            margin: 0 0 2rem;
+        }
+        .story-card h4 { margin-bottom: 0.75rem; }
+        .story-card p {
+            margin-bottom: 0.85rem;
+            font-size: 0.98rem;
+            line-height: 1.65;
+        }
+        .story-card p:last-child { margin-bottom: 0; }
+        .story-card em { font-style: italic; }
+        .story-card strong { color: var(--text-black); }
+
+        /* SIGNOFF */
+        .signoff {
+            font-family: ui-monospace, monospace;
+            font-size: 0.95rem;
+            color: var(--text-gray);
+            margin: 1.5rem 0 0;
+        }
+
+        /* SECTION CARD — each topic block */
+        .section-card { margin-bottom: 1.5rem; }
+        .section-card .card-header {
+            padding: 1rem 1.5rem;
+            border-bottom: var(--border);
+            background: var(--bg-page);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .section-card .card-header .section-num {
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            min-width: 2rem; height: 2rem;
+            background: var(--accent-teal);
+            border: var(--border);
+            font-family: ui-monospace, monospace;
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 0 0.5rem;
+            box-shadow: -0.15rem 0.15rem 0 0 #383838;
+        }
+        .section-card .card-header h2 { font-size: 1.25rem; flex: 1; }
+        .section-card .section-sub {
+            padding: 1rem 1.5rem 0;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            font-style: italic;
+            line-height: 1.55;
+        }
+
+        /* QUESTION LIST */
+        .q-list { list-style: none; padding: 0; margin: 0; }
+        .q-list > li {
+            position: relative;
+            padding: 1.25rem 1.5rem 1.25rem 4rem;
+            border-top: 1px solid #d6d6d4;
+            font-size: 1.02rem;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+        .q-list > li:first-child { border-top: 1px solid #d6d6d4; margin-top: 1rem; }
+        .q-list > li .qn {
+            position: absolute;
+            left: 1.5rem;
+            top: 1.3rem;
+            font-family: ui-monospace, monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-black);
+            background: var(--accent-yellow);
+            border: 1px solid black;
+            padding: 0.1rem 0.4rem;
+            min-width: 1.8rem;
+            text-align: center;
+            box-shadow: -0.1rem 0.1rem 0 0 #383838;
+        }
+        .q-list > li em { font-style: italic; color: var(--text-black); }
+        .q-list > li .hint {
+            display: block;
+            margin-top: 0.5rem;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-family: ui-monospace, monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        /* CLOSER CARD */
+        .closer-card {
+            background: var(--bg-green);
+            border: var(--border);
+            box-shadow: var(--shadow-sm);
+            padding: 1.5rem 1.75rem;
+            margin-top: 2.5rem;
+        }
+        .closer-card h4 { margin-bottom: 0.75rem; }
+        .closer-card p {
+            margin-bottom: 0.75rem;
+            font-size: 0.98rem;
+        }
+        .closer-card p:last-child { margin-bottom: 0; }
+        .closer-card strong { color: var(--text-black); }
+
+        @media (max-width: 600px) {
+            body { padding: 1rem 0.75rem 4rem; font-size: 0.95rem; }
+            h1 { font-size: 1.7rem; }
+            .card-content { padding: 1.25rem 1.25rem; }
+            .how-card, .story-card, .closer-card { padding: 1.25rem; }
+            .section-card .card-header { padding: 0.85rem 1.15rem; }
+            .section-card .card-header h2 { font-size: 1.05rem; }
+            .section-card .section-sub { padding: 0.85rem 1.15rem 0; font-size: 0.88rem; }
+            .q-list > li { padding: 1rem 1.15rem 1rem 3.5rem; font-size: 0.98rem; }
+            .q-list > li .qn { left: 1.15rem; top: 1.05rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="card header-card">
+        <div class="card-content">
+            <div class="icon">★</div>
+            <h1>For Ethan —<br>Some Questions</h1>
+            <p class="subtitle">// Story extraction — Jun 8 2026</p>
+        </div>
+    </div>
+
+    <!-- INTRO -->
+    <div class="card">
+        <div class="card-content intro">
+            <p>I went deep into your $50K motor tics funnel and the YouTube interview before writing these. So I'm not asking you to repeat what's already out there. What I'm after is the stuff <em>around</em> the story that nobody has on tape yet — the small specifics, the moments, the things you and your parents would only mention if someone asked.</p>
+
+            <p>This is the one part of all of this I can't do without you. Everything else I can help with — the funnels, the ads, the emails, the page copy. But the source material has to come from a real story, and your real story is the entire reason this can work.</p>
+
+            <p><strong>The specifics are your edge.</strong> Most marketing in this category is flat because it's missing real-life detail. You have it. The more concrete you can get — the actual scenes, the actual sentences, the actual numbers, the actual moments — the better the work that comes out.</p>
+
+            <div class="how-card">
+                <h4>// How to make this easy on yourself</h4>
+                <p>Don't type these. Open the voice memo app, hit record, and just talk. One memo per question or one long one — whatever flows.</p>
+                <p>Three ways people do this well — pick whichever fits your week:</p>
+                <ul class="how-list">
+                    <li><strong>One deep session.</strong> Block off an hour, sit somewhere quiet, work through it in one go.</li>
+                    <li><strong>Split across a few days.</strong> Twenty minutes today, twenty more tomorrow, finish on the weekend.</li>
+                    <li><strong>Walk and let it marinate.</strong> Answer a few, go for a walk, come back to the same ones with fresh thoughts.</li>
+                </ul>
+                <p>Honestly the last one is what I do. Coming back to the same question two or three times almost always surfaces stuff I didn't have the first time. So if you find yourself thinking of something three days later, just open the memo again and add it.</p>
+                <p>For the questions tagged <em>pull in family</em>, the richest answers usually come from calling whoever was driving this with you and letting them remember out loud. For the ones tagged <em>as a dad now</em>, those are the ones only you can answer from where you are now.</p>
+                <p><strong>The small stuff is the gold.</strong> The details you'd brush past as "not important" are usually the ones a parent reading would recognize from her own life. So lean toward specifics, not summaries.</p>
+                <p>You don't have to go in order. Start wherever pulls you. Skip anything that doesn't.</p>
+            </div>
+
+            <div class="story-card">
+                <h4>// A quick story about why the small stuff matters</h4>
+                <p>The most famous direct-response ad in golf history is John Carlton's <em>"Amazing Secret Discovered By One-Legged Golfer Adds 50 Yards To Your Drives."</em> Ran for years. Made millions.</p>
+                <p>Carlton didn't invent the angle. He got it by interviewing the golf instructor whose product he was writing for. They sat together for almost an hour and Carlton got nothing usable — until the instructor mentioned, as a throwaway, the one-legged guy he'd watched at a driving range whose swing had quietly inspired his whole technique. To him, that detail was old news. He almost didn't bring it up because he didn't think it was important.</p>
+                <p>That's the pattern. <strong>The throwaway is usually the gold.</strong> So when something feels too small or random to be worth saying — say it anyway.</p>
+            </div>
+
+            <p class="signoff">— Andrew</p>
+        </div>
+    </div>
+
+    <!-- BLOCK 1 — CONTRADICTIONS -->
+    <div class="card section-card">
+        <div class="card-header">
+            <span class="section-num">01</span>
+            <h2>The Things That Piss You Off</h2>
+        </div>
+        <p class="section-sub">The beliefs out there that you know are wrong because you lived the counter-evidence.</p>
+        <ol class="q-list">
+            <li><span class="qn">01</span>What's the medical or parenting "everybody knows" about kids with tics or PANDAS that you think is most flat-out wrong? The thing that makes you go <em>no, actually</em> — at a dinner table, in a Facebook group, from a doctor.</li>
+            <li><span class="qn">02</span>Looking back at the 40 medications — was there a point where you realized the medications themselves were part of the problem, not just failing to fix it? When did that flip happen?</li>
+            <li><span class="qn">03</span>When the doctors kept pointing at "anxiety" or "Tourette's" or "behavioral" as the cause — what was <em>actually</em> causing it? Walk me through how you'd explain it to another parent now.</li>
+            <li><span class="qn">04</span>What's the position in this whole conversation that <em>nobody</em> is currently taking that you wish someone would? Not the contrarian take that's been said a million times — the one you'd quietly say to a friend over coffee that you don't see anyone actually defending publicly.</li>
+            <li><span class="qn">05</span>If you had to put up a poster of just one sentence — about what you went through, what it taught you, or what you'd want the world to know about kids' health — what's the first sentence that comes out? Don't overthink. <span class="hint">First draft. Whatever lands.</span></li>
+        </ol>
+    </div>
+
+    <!-- BLOCK 2 — THE PROSPECT'S MIND -->
+    <div class="card section-card">
+        <div class="card-header">
+            <span class="section-num">02</span>
+            <h2>What's Going On In Her Head</h2>
+        </div>
+        <p class="section-sub">The parent reader — what she's thinking and seeing and hearing.</p>
+        <ol class="q-list">
+            <li><span class="qn">06</span>A mom of a kid with sudden-onset tics is at her kitchen table at 11pm scrolling her phone. What's running through her head right now? Not what she'd say to a doctor — what she's thinking when nobody's listening.</li>
+            <li><span class="qn">07</span>When other parents have come to your family asking about a kid with similar symptoms — what do they say first? What's the question they always lead with, and what's the question they're <em>actually</em> asking underneath? <span class="hint">Pull in family</span></li>
+            <li><span class="qn">08</span>Where are parents in this situation getting their information right now? Who are they listening to, what's in their info diet — the Facebook groups, the doctors, the books, the influencers, the subreddits?</li>
+            <li><span class="qn">09</span>What's a sentence somebody said during your whole experience that you still remember word for word? Doesn't have to be the most important one. Just the one that stuck. <span class="hint">Pull in family</span></li>
+            <li><span class="qn">10</span>Walk me into <em>one</em> specific doctor's office or hospital room from this whole period. Just one. Where was it, what did the room look like, who was there, what was being said? Don't generalize. Render the one scene that comes up first when you think about it.</li>
+        </ol>
+    </div>
+
+    <!-- BLOCK 3 — THE HEART -->
+    <div class="card section-card">
+        <div class="card-header">
+            <span class="section-num">03</span>
+            <h2>The Parts You Don't Usually Talk About</h2>
+        </div>
+        <p class="section-sub">The emotional reality underneath. The texture nobody outside the family knows.</p>
+        <ol class="q-list">
+            <li><span class="qn">11</span>The funnel mentions you started smoking to numb yourself even though you knew it wasn't a real solution. Walk me through that decision — when did it start, what was happening that made it feel like the only thing left? <span class="hint">This one's heavy. Skip if you'd rather.</span></li>
+            <li><span class="qn">12</span>What was the moment you took control — that <em>"I was done outsourcing my health to treatments that failed"</em> turn? What were you doing, what triggered it, what did you decide?</li>
+            <li><span class="qn">13</span>When you were at your worst, was the real you still in there? What was it like trying to be you while your body and mind were running their own program?</li>
+            <li><span class="qn">14</span>Did anyone ever suggest your symptoms were behavioral — that you were doing it on purpose, looking for attention, "acting out"? What did that land like on you and on your parents at the time?</li>
+            <li><span class="qn">15</span>What did the tics actually look like in your body? Was it your shoulder, your face, your throat, your eyes — was it the same one over and over or did it move around? Was it visible to other people or could you sometimes mask it? <em>The specific physical picture is what a parent reading would recognize in her own kid.</em></li>
+            <li><span class="qn">16</span>What did a tic feel like from the inside, in the seconds before, during, and after? Was there a buildup, a release, a relief, a shame? <em>Nobody outside the body knows this. You're one of the few people who could ever write it down.</em></li>
+            <li><span class="qn">17</span>What did you have to give up during the worst stretch that other kids your age were doing? Sports, friendships, schoolwork, parties, dating, normal teenage stuff. The specific things you lost or stepped away from.</li>
+            <li><span class="qn">18</span>Was there ever a stretch where you felt like you'd lost yourself — like you didn't recognize who you were anymore? And was there a moment, even briefly, when you came back? What brought you back?</li>
+        </ol>
+    </div>
+
+    <!-- BLOCK 4 — THE DAD-NOW VIEW -->
+    <div class="card section-card">
+        <div class="card-header">
+            <span class="section-num">04</span>
+            <h2>As The Dad You Are Now</h2>
+        </div>
+        <p class="section-sub">The vantage point only you have. Nobody else in this category can answer these.</p>
+        <ol class="q-list">
+            <li><span class="qn">19</span>If one of your daughters started showing what you showed at the age you were — what would you do first? What would you <em>not</em> do? What would you tell yourself, knowing what you know now? <span class="hint">As a dad now</span></li>
+            <li><span class="qn">20</span>What do you refuse to let into your daughters' lives because of what you went through? Foods, medications, products, doctors, environments — the list of "absolutely not in this house" and why each one's on it. <span class="hint">As a dad now</span></li>
+            <li><span class="qn">21</span>What do you watch for in your daughters — quietly, that they don't know about — because of what you know now? What are the early signs you'd catch immediately that another parent would miss? <span class="hint">As a dad now</span></li>
+            <li><span class="qn">22</span>Have you ever had a moment with one of your daughters that hit you because it would have been impossible for you at the same age, given what you were going through? A small, ordinary moment that meant something extra. <span class="hint">As a dad now</span></li>
+        </ol>
+    </div>
+
+    <!-- BLOCK 5 — RECEIPTS -->
+    <div class="card section-card">
+        <div class="card-header">
+            <span class="section-num">05</span>
+            <h2>The Receipts</h2>
+        </div>
+        <p class="section-sub">The real numbers and names that make the story unforgeable.</p>
+        <ol class="q-list">
+            <li><span class="qn">23</span>Of the 40+ medications — how many can you name specifically? Drug names, supplements, alternative therapies, diet protocols. Even partial lists are gold. <span class="hint">Pull in family</span></li>
+            <li><span class="qn">24</span>Rough count — how many doctors and specialists across the whole journey? How many neurologists, how many other specialties? <span class="hint">Pull in family</span></li>
+            <li><span class="qn">25</span>The $50K — rough breakdown across categories. Specialists, meds, supplements, alternative treatments, travel. Wide ranges are fine. <span class="hint">Pull in family</span></li>
+            <li><span class="qn">26</span>Are there any documents from this period that still exist? Prescription bottles, EOBs, doctor's notes, photos, home videos, journal entries. Even knowing what's still around is helpful. <span class="hint">Pull in family</span></li>
+        </ol>
+    </div>
+
+    <!-- BLOCK 6 — WEIRD SPECIFICS -->
+    <div class="card section-card">
+        <div class="card-header">
+            <span class="section-num">06</span>
+            <h2>The Weird Specifics</h2>
+        </div>
+        <p class="section-sub">The Carlton one-legged-golfer stuff. The details you'd never think to mention.</p>
+        <ol class="q-list">
+            <li><span class="qn">27</span>What's the weirdest, most specific moment you remember from the worst of it? Something with nothing to do with the medical part — what was on TV, what was for dinner, what your house smelled like, what song was playing, what someone was wearing. <em>Pick the one scene that pops into your head first and render it. The kind of detail that feels random is usually the gold.</em></li>
+            <li><span class="qn">28</span>Is there a single image from that period — actual or in your head — that, if a parent saw it on her phone screen, would make her stop scrolling and feel something?</li>
+        </ol>
+    </div>
+
+    <!-- BLOCK 7 — THE TURN -->
+    <div class="card section-card">
+        <div class="card-header">
+            <span class="section-num">07</span>
+            <h2>What Changed, And What's True Now</h2>
+        </div>
+        <p class="section-sub">The proof that this isn't denial wearing a hopeful costume.</p>
+        <ol class="q-list">
+            <li><span class="qn">29</span>When you started addressing the inflammation directly — what was the first thing that actually changed? Slow or fast? Was there a moment of <em>wait, is this real</em> before you let yourself believe it?</li>
+            <li><span class="qn">30</span>What does an ordinary Tuesday look like for you now? Where you live, what you do, the small ordinary things — including being a dad to your three daughters — that during the worst times wouldn't have been possible.</li>
+            <li><span class="qn">31</span>Who or what was the source that first pointed you in the direction that ended up working? A friend's mom, a Reddit comment, a podcast, a book, a single conversation? Sometimes there's one person or one moment that changed the trajectory. Who was it for you?</li>
+            <li><span class="qn">32</span>What's something you did or felt for the first time after recovery — that surprised you? A small moment of "wait, I haven't been able to do this in years" or "I forgot what this felt like." The first-time-after moments.</li>
+            <li><span class="qn">33</span>If a teenager right now is sitting in his room having the same kind of day you used to have — what's the one thing you'd want him to know? Not the parent reading this. Him.</li>
+        </ol>
+    </div>
+
+    <!-- BLOCK 8 — BRAND'S WHY -->
+    <div class="card section-card">
+        <div class="card-header">
+            <span class="section-num">08</span>
+            <h2>Why You Built This</h2>
+        </div>
+        <p class="section-sub">Not the marketing answer. The real one.</p>
+        <ol class="q-list">
+            <li><span class="qn">34</span>If you had to explain to your daughters in twenty years why their dad built Green Valley Nutrition — what would you tell them?</li>
+            <li><span class="qn">35</span>What do you believe now about kids' health, the medical system, or how parents should approach this stuff that you didn't believe before PANDAS? What's the worldview shift that came out of all of it?</li>
+            <li><span class="qn">36</span>What would have been different about your childhood if your family had had access to what you sell now, back then? What would the trajectory have looked like?</li>
+        </ol>
+    </div>
+
+    <!-- CLOSER -->
+    <div class="closer-card">
+        <h4>// Sending them back</h4>
+        <p>Send the voice memos however is easiest. Drop a folder in Dropbox, share a Google Drive link, attach them in Skool — whatever works. I'll handle everything from there.</p>
+        <p>And again — <strong>the small stuff is the gold.</strong> When in doubt, say more.</p>
+        <p>Talk soon.</p>
+        <p>— Andrew</p>
+    </div>
+
+</div>
+</body>
+</html>
