@@ -114,6 +114,22 @@
         .model-card p:last-child { margin-bottom: 0; }
         .model-card em { font-style: italic; color: var(--text-black); }
         .model-card strong { color: var(--text-black); }
+        .venn-figure {
+            margin: 0.5rem auto 1.25rem;
+            text-align: center;
+            max-width: 360px;
+        }
+        .venn-figure img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border: var(--border);
+            background: #F8F4EC;
+            box-shadow: var(--shadow-sm);
+        }
+        @media (max-width: 600px) {
+            .venn-figure { max-width: 100%; margin: 0 auto 1rem; }
+        }
 
         /* HOW-TO CARD — yellow tint, friendly */
         .how-card {
@@ -301,9 +317,12 @@
 
             <div class="model-card">
                 <h4>// The picture I keep in my head</h4>
+                <figure class="venn-figure">
+                    <img src="images/million-dollar-angles-venn.png" alt="Three-circle Venn diagram showing Interesting, Contradicting, and Resonating circles overlapping. The center, labeled Ethan's Million Dollar Angles, is annotated as 'the gold lives here.'" />
+                </figure>
                 <p>Think of all the marketing in your space as a crowd at a beach. Everybody's wearing the same color. The same "natural this," the same "doctor-formulated that," the same "support your child's nervous system." Nobody stands out, so nothing gets seen.</p>
                 <p>To be the one a desperate parent actually spots from across that crowd, you have to be standing somewhere nobody else is standing. Not louder — somewhere different. And the only way to know where that somewhere is is to know the crowd intimately enough to see the gap.</p>
-                <p>Your real story <em>is</em> the gap. Every specific detail you give me is another step toward that gap — the place where what you say is interesting, contradicts what they've been told, and rings true at the same time. <strong>That's the spot where ads stop bouncing off and start landing.</strong></p>
+                <p>Your real story <em>is</em> the gap. Every specific detail you give me is another step toward the spot in the middle of that diagram — interesting, contradicting, and resonating all at once. <strong>That's where ads stop bouncing off and start landing.</strong></p>
             </div>
 
             <p>So that's why I'm asking. The whole year of marketing we build for the brand traces back to the answers you give in this exercise. Funnels, ads, emails, the founder story on the PDP, video scripts, advertorials — every one of those will pull lines, scenes, sentences, and specifics from what you record here.</p>
